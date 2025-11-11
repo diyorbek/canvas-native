@@ -14,5 +14,11 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(raylib)
 
+# app executable
 add_executable(${PROJECT_NAME} source/main.cpp)
 target_link_libraries(${PROJECT_NAME} raylib)
+
+# shared library
+set(LIBRARY_NAME canvasnative)
+add_library(${LIBRARY_NAME} SHARED source/lib.cpp)
+target_link_libraries(${LIBRARY_NAME} raylib)

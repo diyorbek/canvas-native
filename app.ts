@@ -6,7 +6,7 @@ const window = createWindow(
   "Canvas Native Demo",
   (ctx: IRenderingContext2D) => {
     // Set line width
-    ctx.lineWidth = 10;
+    ctx.lineWidth = 5;
 
     ctx.strokeStyle = "#000";
 
@@ -17,12 +17,12 @@ const window = createWindow(
     ctx.fillRect(130, 190, 40, 60);
 
     // // Roof
-    // ctx.beginPath();
-    // ctx.moveTo(50, 140);
-    // ctx.lineTo(150, 60);
-    // ctx.lineTo(250, 140);
-    // ctx.closePath();
-    // ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(50, 140);
+    ctx.lineTo(150, 60);
+    ctx.lineTo(250, 140);
+    ctx.closePath();
+    ctx.stroke();
   }
 );
 

@@ -1,42 +1,54 @@
-#include <cctype>
+#include <stdio.h>
 
 #include "raylib.h"
-#include "stdio.h"
 
-int hexCharToValue(char hex_char) {
-  hex_char =
-      std::toupper(hex_char);  // Convert to uppercase for consistent handling
+#if defined(__APPLE__)
+#include <OpenGL/gl3.h>
+#else
+#include <GL/gl.h>
+#endif
 
-  if (hex_char >= '0' && hex_char <= '9') {
-    return (hex_char - '0') * 17;
+#include "nanovg.h"
+// Include NanoVG (after defining which backend to use)
+#ifndef NANOVG_GL3_IMPLEMENTATION
+#define NANOVG_GL3_IMPLEMENTATION
+#endif
+
+#include "nanovg_gl.h"
+
+int main(void) {
+  InitWindow(800, 600, "Raylib + NanoVG Example");
+  SetTargetFPS(60);
+
+  // Create NanoVG context (GL3 backend)
+  NVGcontext* vg = nvgCreateGL3(NVG_ANTIALIAS | NVG_STENCIL_STROKES);
+
+  if (!vg) {
+    printf("Failed to initialize NanoVG\n");
+    return -1;
   }
-
-  if (hex_char >= 'A' && hex_char <= 'F') {
-    return (hex_char - 'A' + 10) * 17;
-  }
-
-  return -1;  // Indicate an invalid hex character
-}
-
-extern "C" Color StrokeStyleToColor(char* text) {
-  unsigned char red = hexCharToValue(text[1]);
-  unsigned char green = hexCharToValue(text[2]);
-  unsigned char blue = hexCharToValue(text[3]);
-
-  return Color{red, green, blue, 0xFF};
-}
-
-int main() {
-  InitWindow(800, 600, "Basic Window");
 
   while (!WindowShouldClose()) {
     BeginDrawing();
-    // DrawText("Hello WORLD!!!!!", 300, 200, 40, WHITE);
-    DrawRectangleLines(75, 140, 150, 110, BLACK);
-    ClearBackground(StrokeStyleToColor("#fff"));
+    ClearBackground(RAYWHITE);
+    nvgBeginFrame(vg, GetScreenWidth(), GetScreenHeight(), 1.0f);
+
+    nvgStrokeWidth(vg, 10);
+    // nvgLineCap(vg, NVG_ROUND);
+    nvgStrokeColor(vg, nvgRGB(0, 0, 0));
+
+    nvgBeginPath(vg);
+    nvgMoveTo(vg, 50, 140);
+    nvgLineTo(vg, 150, 60);
+    nvgLineTo(vg, 250, 140);
+    nvgClosePath(vg);
+    nvgStroke(vg);
+
+    nvgEndFrame(vg);
     EndDrawing();
   }
 
+  nvgDeleteGL3(vg);
   CloseWindow();
 
   return 0;

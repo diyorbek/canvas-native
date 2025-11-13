@@ -3,6 +3,20 @@
 
 #include "raylib.h"
 
+#if defined(__APPLE__)
+#include <OpenGL/gl3.h>
+#else
+#include <GL/gl.h>
+#endif
+
+#include "nanovg.h"
+// Include NanoVG (after defining which backend to use)
+#ifndef NANOVG_GL3_IMPLEMENTATION
+#define NANOVG_GL3_IMPLEMENTATION
+#endif
+
+#include "nanovg_gl.h"
+
 int hexCharToValue(char hex_char) {
   hex_char =
       std::toupper(hex_char);  // Convert to uppercase for consistent handling

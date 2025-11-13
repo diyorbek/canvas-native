@@ -40,6 +40,62 @@ const lib = Deno.dlopen("./build/libcanvasnative.dylib", {
     result: { struct: ["u8", "u8", "u8", "u8"] },
   },
 
+  // NanoVG
+  // ...NANOVG_SYMBOLS,
+  // NVGcontext* nvgCreateGL3(int flags)
+  nvgCreateGL3: {
+    parameters: ["i32"],
+    result: "pointer",
+  },
+
+  // void nvgBeginFrame(NVGcontext* ctx, float windowWidth, float windowHeight, float devicePixelRatio)
+  nvgBeginFrame: {
+    parameters: ["pointer", "f32", "f32", "f32"],
+    result: "void",
+  },
+
+  nvgRGB: {
+    parameters: ["u8", "u8", "u8"],
+    result: { struct: ["f32", "f32", "f32", "f32"] },
+  },
+
+  nvgStrokeWidth: {
+    parameters: ["pointer", "f32"],
+    result: "void",
+  },
+  nvgStrokeColor: {
+    parameters: ["pointer", { struct: ["f32", "f32", "f32", "f32"] }],
+    result: "void",
+  },
+  nvgBeginPath: {
+    parameters: ["pointer"],
+    result: "void",
+  },
+  nvgMoveTo: {
+    parameters: ["pointer", "f32", "f32"],
+    result: "void",
+  },
+  nvgLineTo: {
+    parameters: ["pointer", "f32", "f32"],
+    result: "void",
+  },
+  nvgClosePath: {
+    parameters: ["pointer"],
+    result: "void",
+  },
+  nvgStroke: {
+    parameters: ["pointer"],
+    result: "void",
+  },
+  nvgEndFrame: {
+    parameters: ["pointer"],
+    result: "void",
+  },
+  nvgDeleteGL3: {
+    parameters: ["pointer"],
+    result: "void",
+  },
+
   // Raylib
   InitWindow: {
     parameters: ["i32", "i32", "buffer"],
@@ -65,13 +121,33 @@ const lib = Deno.dlopen("./build/libcanvasnative.dylib", {
     parameters: [],
     result: "void",
   },
+  GetScreenWidth: {
+    parameters: [],
+    result: "i32",
+  },
+  GetScreenHeight: {
+    parameters: [],
+    result: "i32",
+  },
 });
 
 // Call native function from shared library
 class RenderingContext2D implements IRenderingContext2D {
   strokeStyle = "#000";
   fillStyle = "#000";
-  lineWidth = 1;
+
+  private _lineWidth: number = 1;
+
+  get lineWidth() {
+    return this._lineWidth;
+  }
+
+  set lineWidth(value: number) {
+    this._lineWidth = value;
+    lib.symbols.nvgStrokeWidth(this.nativeCtx, this._lineWidth);
+  }
+
+  constructor(private nativeCtx: Deno.PointerValue) {}
 
   strokeRect(x: number, y: number, w: number, h: number): void {
     lib.symbols.StrokeRect(
@@ -88,19 +164,19 @@ class RenderingContext2D implements IRenderingContext2D {
     lib.symbols.FillRect(x, y, w, h, textToBuffer(this.strokeStyle));
   }
   beginPath(): void {
-    throw new Error("Method not implemented.");
+    lib.symbols.nvgBeginPath(this.nativeCtx);
   }
   moveTo(x: number, y: number): void {
-    throw new Error("Method not implemented.");
+    lib.symbols.nvgMoveTo(this.nativeCtx, x, y);
   }
   lineTo(x: number, y: number): void {
-    throw new Error("Method not implemented.");
+    lib.symbols.nvgLineTo(this.nativeCtx, x, y);
   }
   closePath(): void {
-    throw new Error("Method not implemented.");
+    lib.symbols.nvgClosePath(this.nativeCtx);
   }
   stroke(): void {
-    throw new Error("Method not implemented.");
+    lib.symbols.nvgStroke(this.nativeCtx);
   }
 }
 
@@ -110,10 +186,11 @@ export function createWindow(
   title: string,
   callback: (ctx: IRenderingContext2D) => void
 ): DesktopWindow {
-  // lib.symbols.CreateWindow(width, height, textToBuffer(title));
-
   lib.symbols.InitWindow(width, height, textToBuffer(title));
-  const ctx = new RenderingContext2D();
+
+  const nvgContext = lib.symbols.nvgCreateGL3(1 | 2);
+
+  const ctx = new RenderingContext2D(nvgContext);
 
   while (!lib.symbols.WindowShouldClose()) {
     lib.symbols.BeginDrawing();
@@ -121,16 +198,25 @@ export function createWindow(
       lib.symbols.StrokeStyleToColor(textToBuffer("#fff"))
     );
 
+    lib.symbols.nvgBeginFrame(
+      nvgContext,
+      lib.symbols.GetScreenWidth(),
+      lib.symbols.GetScreenHeight(),
+      1
+    );
+
     callback(ctx);
 
+    lib.symbols.nvgEndFrame(nvgContext);
     lib.symbols.EndDrawing();
   }
 
+  lib.symbols.nvgDeleteGL3(nvgContext);
   lib.symbols.CloseWindow();
 
   return {
     getContext: () => {
-      return new RenderingContext2D();
+      return new RenderingContext2D(nvgContext);
     },
   };
 }

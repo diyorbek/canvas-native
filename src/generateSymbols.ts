@@ -18,9 +18,13 @@ const conversionTable = {
   double: "f64",
   void: "void",
   "void *": "pointer",
+  "char *": "buffer",
+  "const char *": "buffer",
   NVGpaint: STRUCT_NVGpaint,
   NVGcolor: STRUCT_NVGcolor,
 };
+
+const blackList = ["nvgCreateImageMem", "nvgCreateImage"];
 
 const command = new Deno.Command("clang++", {
   args: [
@@ -40,7 +44,9 @@ const ast = JSON.parse(decoder.decode(output.stdout));
 console.log(ast);
 ast.inner
   .flatMap((decl) => decl.inner)
-  .filter((decl) => decl.kind === "FunctionDecl")
+  .filter(
+    (decl) => decl.kind === "FunctionDecl" && !blackList.includes(decl.name)
+  )
   // .flatMap(crd => crd.inner)
   .forEach((decl) => {
     // console.log(
@@ -53,16 +59,20 @@ ast.inner
       .match(/(\S+\s?\*?)\(/)?.[1]
       .trim();
 
-    const result = returnType?.includes("*")
+    const result = conversionTable[returnType]
+      ? conversionTable[returnType]
+      : returnType?.includes("*")
       ? "pointer"
-      : conversionTable[returnType];
+      : "invalid";
 
     const parameters = decl.inner
       // .filter((p) => p.type === "ParmVarDecl");
       .map((p) =>
-        p.type.qualType?.includes("*")
+        conversionTable[p.type.qualType]
+          ? conversionTable[p.type.qualType]
+          : p.type.qualType?.includes("*")
           ? "pointer"
-          : conversionTable[p.type.qualType]
+          : "invalid"
       );
 
     if (parameters.includes(undefined)) {

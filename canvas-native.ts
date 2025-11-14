@@ -1,5 +1,7 @@
 /// <reference lib="deno.ns" />
 
+import { ffi } from "./src/ffi.ts";
+
 interface DesktopWindow {
   getContext(): IRenderingContext2D;
 }
@@ -19,118 +21,6 @@ export interface IRenderingContext2D {
   stroke(): void;
 }
 
-const lib = Deno.dlopen("./build/libcanvasnative.dylib", {
-  CreateWindow: {
-    parameters: ["i32", "i32", "buffer", "pointer", "pointer"],
-    result: "void",
-  },
-
-  StrokeRect: {
-    parameters: ["f32", "f32", "f32", "f32", "buffer", "f32"],
-    result: "void",
-  },
-
-  FillRect: {
-    parameters: ["f32", "f32", "f32", "f32", "buffer"],
-    result: "void",
-  },
-
-  StrokeStyleToColor: {
-    parameters: ["buffer"],
-    result: { struct: ["u8", "u8", "u8", "u8"] },
-  },
-
-  // NanoVG
-  // ...NANOVG_SYMBOLS,
-  // NVGcontext* nvgCreateGL3(int flags)
-  nvgCreateGL3: {
-    parameters: ["i32"],
-    result: "pointer",
-  },
-
-  // void nvgBeginFrame(NVGcontext* ctx, float windowWidth, float windowHeight, float devicePixelRatio)
-  nvgBeginFrame: {
-    parameters: ["pointer", "f32", "f32", "f32"],
-    result: "void",
-  },
-
-  nvgRGB: {
-    parameters: ["u8", "u8", "u8"],
-    result: { struct: ["f32", "f32", "f32", "f32"] },
-  },
-
-  nvgStrokeWidth: {
-    parameters: ["pointer", "f32"],
-    result: "void",
-  },
-  nvgStrokeColor: {
-    parameters: ["pointer", { struct: ["f32", "f32", "f32", "f32"] }],
-    result: "void",
-  },
-  nvgBeginPath: {
-    parameters: ["pointer"],
-    result: "void",
-  },
-  nvgMoveTo: {
-    parameters: ["pointer", "f32", "f32"],
-    result: "void",
-  },
-  nvgLineTo: {
-    parameters: ["pointer", "f32", "f32"],
-    result: "void",
-  },
-  nvgClosePath: {
-    parameters: ["pointer"],
-    result: "void",
-  },
-  nvgStroke: {
-    parameters: ["pointer"],
-    result: "void",
-  },
-  nvgEndFrame: {
-    parameters: ["pointer"],
-    result: "void",
-  },
-  nvgDeleteGL3: {
-    parameters: ["pointer"],
-    result: "void",
-  },
-
-  // Raylib
-  InitWindow: {
-    parameters: ["i32", "i32", "buffer"],
-    result: "void",
-  },
-  WindowShouldClose: {
-    parameters: [],
-    result: "bool",
-  },
-  BeginDrawing: {
-    parameters: [],
-    result: "void",
-  },
-  ClearBackground: {
-    parameters: [{ struct: ["u8", "u8", "u8", "u8"] }],
-    result: "void",
-  },
-  EndDrawing: {
-    parameters: [],
-    result: "void",
-  },
-  CloseWindow: {
-    parameters: [],
-    result: "void",
-  },
-  GetScreenWidth: {
-    parameters: [],
-    result: "i32",
-  },
-  GetScreenHeight: {
-    parameters: [],
-    result: "i32",
-  },
-});
-
 // Call native function from shared library
 class RenderingContext2D implements IRenderingContext2D {
   strokeStyle = "#000";
@@ -144,13 +34,13 @@ class RenderingContext2D implements IRenderingContext2D {
 
   set lineWidth(value: number) {
     this._lineWidth = value;
-    lib.symbols.nvgStrokeWidth(this.nativeCtx, this._lineWidth);
+    ffi.symbols.nvgStrokeWidth(this.nativeCtx, this._lineWidth);
   }
 
   constructor(private nativeCtx: Deno.PointerValue) {}
 
   strokeRect(x: number, y: number, w: number, h: number): void {
-    lib.symbols.StrokeRect(
+    ffi.symbols.StrokeRect(
       x,
       y,
       w,
@@ -161,22 +51,22 @@ class RenderingContext2D implements IRenderingContext2D {
   }
 
   fillRect(x: number, y: number, w: number, h: number): void {
-    lib.symbols.FillRect(x, y, w, h, textToBuffer(this.strokeStyle));
+    ffi.symbols.FillRect(x, y, w, h, textToBuffer(this.strokeStyle));
   }
   beginPath(): void {
-    lib.symbols.nvgBeginPath(this.nativeCtx);
+    ffi.symbols.nvgBeginPath(this.nativeCtx);
   }
   moveTo(x: number, y: number): void {
-    lib.symbols.nvgMoveTo(this.nativeCtx, x, y);
+    ffi.symbols.nvgMoveTo(this.nativeCtx, x, y);
   }
   lineTo(x: number, y: number): void {
-    lib.symbols.nvgLineTo(this.nativeCtx, x, y);
+    ffi.symbols.nvgLineTo(this.nativeCtx, x, y);
   }
   closePath(): void {
-    lib.symbols.nvgClosePath(this.nativeCtx);
+    ffi.symbols.nvgClosePath(this.nativeCtx);
   }
   stroke(): void {
-    lib.symbols.nvgStroke(this.nativeCtx);
+    ffi.symbols.nvgStroke(this.nativeCtx);
   }
 }
 
@@ -206,7 +96,7 @@ export function createWindow(
     () => callback(ctx)
   );
 
-  lib.symbols.CreateWindow(
+  ffi.symbols.CreateWindow(
     width,
     height,
     textToBuffer(title),

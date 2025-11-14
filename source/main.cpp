@@ -16,22 +16,35 @@
 
 #include "nanovg_gl.h"
 
-int main(void) {
-  InitWindow(800, 600, "Raylib + NanoVG Example");
-  SetTargetFPS(60);
+void CreateWindow(int width, int height, const char* title,
+                  void (*callback)(void* ctx)) {
+  InitWindow(width, height, title);
 
-  // Create NanoVG context (GL3 backend)
   NVGcontext* vg = nvgCreateGL3(NVG_ANTIALIAS | NVG_STENCIL_STROKES);
 
   if (!vg) {
     printf("Failed to initialize NanoVG\n");
-    return -1;
+    return;
   }
 
   while (!WindowShouldClose()) {
     BeginDrawing();
     ClearBackground(RAYWHITE);
     nvgBeginFrame(vg, GetScreenWidth(), GetScreenHeight(), 1.0f);
+
+    callback(vg);
+
+    nvgEndFrame(vg);
+    EndDrawing();
+  }
+
+  nvgDeleteGL3(vg);
+  CloseWindow();
+}
+
+int main(void) {
+  auto callback = [](void* ctx) {
+    NVGcontext* vg = (NVGcontext*)ctx;
 
     nvgStrokeWidth(vg, 10);
     // nvgLineCap(vg, NVG_ROUND);
@@ -43,13 +56,9 @@ int main(void) {
     nvgLineTo(vg, 250, 140);
     nvgClosePath(vg);
     nvgStroke(vg);
+  };
 
-    nvgEndFrame(vg);
-    EndDrawing();
-  }
-
-  nvgDeleteGL3(vg);
-  CloseWindow();
+  CreateWindow(800, 600, "Raylib + NanoVG Example", callback);
 
   return 0;
 }

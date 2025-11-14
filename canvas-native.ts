@@ -21,7 +21,7 @@ export interface IRenderingContext2D {
 
 const lib = Deno.dlopen("./build/libcanvasnative.dylib", {
   CreateWindow: {
-    parameters: ["i32", "i32", "buffer"],
+    parameters: ["i32", "i32", "buffer", "pointer", "pointer"],
     result: "void",
   },
 
@@ -185,40 +185,34 @@ export function createWindow(
   height: number,
   title: string,
   callback: (ctx: IRenderingContext2D) => void
-): DesktopWindow {
-  lib.symbols.InitWindow(width, height, textToBuffer(title));
+) {
+  let ctx: IRenderingContext2D;
 
-  const nvgContext = lib.symbols.nvgCreateGL3(1 | 2);
+  const initCallback = new Deno.UnsafeCallback(
+    {
+      parameters: ["pointer"],
+      result: "void",
+    } as const,
+    (nativeCtx: Deno.PointerValue) => {
+      ctx = new RenderingContext2D(nativeCtx);
+    }
+  );
 
-  const ctx = new RenderingContext2D(nvgContext);
+  const renderCallback = new Deno.UnsafeCallback(
+    {
+      parameters: [],
+      result: "void",
+    } as const,
+    () => callback(ctx)
+  );
 
-  while (!lib.symbols.WindowShouldClose()) {
-    lib.symbols.BeginDrawing();
-    lib.symbols.ClearBackground(
-      lib.symbols.StrokeStyleToColor(textToBuffer("#fff"))
-    );
-
-    lib.symbols.nvgBeginFrame(
-      nvgContext,
-      lib.symbols.GetScreenWidth(),
-      lib.symbols.GetScreenHeight(),
-      1
-    );
-
-    callback(ctx);
-
-    lib.symbols.nvgEndFrame(nvgContext);
-    lib.symbols.EndDrawing();
-  }
-
-  lib.symbols.nvgDeleteGL3(nvgContext);
-  lib.symbols.CloseWindow();
-
-  return {
-    getContext: () => {
-      return new RenderingContext2D(nvgContext);
-    },
-  };
+  lib.symbols.CreateWindow(
+    width,
+    height,
+    textToBuffer(title),
+    initCallback.pointer,
+    renderCallback.pointer
+  );
 }
 
 function textToBuffer(text: string) {

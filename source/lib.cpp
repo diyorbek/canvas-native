@@ -1,4 +1,5 @@
 #include <cctype>
+#include <iostream>
 #include <vector>
 
 #include "raylib.h"
@@ -32,7 +33,9 @@ int hexCharToValue(char hex_char) {
   return -1;  // Indicate an invalid hex character
 }
 
-extern "C" Color StrokeStyleToColor(char* text) {
+extern "C" {
+
+Color StrokeStyleToColor(char* text) {
   unsigned char red = hexCharToValue(text[1]);
   unsigned char green = hexCharToValue(text[2]);
   unsigned char blue = hexCharToValue(text[3]);
@@ -40,25 +43,41 @@ extern "C" Color StrokeStyleToColor(char* text) {
   return Color{red, green, blue, 0xFF};
 }
 
-extern "C" void CreateWindow(int width, int height, const char* title) {
+void CreateWindow(int width, int height, const char* title,
+                  void (*init_callback)(void* ctx), void (*render_callback)()) {
   InitWindow(width, height, title);
+
+  NVGcontext* nvgCtx = nvgCreateGL3(NVG_ANTIALIAS | NVG_STENCIL_STROKES);
+
+  if (!nvgCtx) {
+    printf("Failed to initialize NanoVG\n");
+    return;
+  }
+
+  init_callback(nvgCtx);
 
   while (!WindowShouldClose()) {
     BeginDrawing();
-    ClearBackground(WHITE);
+    ClearBackground(RAYWHITE);
+    nvgBeginFrame(nvgCtx, GetScreenWidth(), GetScreenHeight(), 1.0f);
+
+    render_callback();
+
+    nvgEndFrame(nvgCtx);
     EndDrawing();
   }
 
+  nvgDeleteGL3(nvgCtx);
   CloseWindow();
 }
 
-extern "C" void StrokeRect(float posX, float posY, float width, float height,
-                           char* color, float lineThick) {
+void StrokeRect(float posX, float posY, float width, float height, char* color,
+                float lineThick) {
   DrawRectangleLinesEx({posX, posY, width, height}, lineThick,
                        StrokeStyleToColor(color));
 }
 
-extern "C" void FillRect(float posX, float posY, float width, float height,
-                         char* color) {
+void FillRect(float posX, float posY, float width, float height, char* color) {
   DrawRectangle(posX, posY, width, height, StrokeStyleToColor(color));
+}
 }

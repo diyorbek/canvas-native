@@ -1,8 +1,9 @@
-import { createWindow, IRenderingContext2D } from "./canvas-native.ts";
+import { createWindow } from "./canvas-native.ts";
+import { RenderingContext2D } from "./src/context2d.ts";
 
-createWindow(800, 500, "Canvas Native Demo", (ctx: IRenderingContext2D) => {
+createWindow(800, 500, "Canvas Native Demo", (ctx: RenderingContext2D) => {
   // Set line width
-  ctx.lineWidth = 5;
+  ctx.lineWidth = 10;
 
   ctx.strokeStyle = "#000";
 

@@ -1,8 +1,9 @@
+// deno-lint-ignore-file no-explicit-any
 import { STRUCT_NVGcolor, STRUCT_NVGpaint } from "./structs.ts";
 
-const symbols = {};
+const symbols: Deno.ForeignLibraryInterface = {};
 
-const conversionTable = {
+const conversionTable: Record<string, any> = {
   int: "i32",
   "const int": "i32",
   char: "i8",
@@ -41,39 +42,31 @@ const output = command.outputSync();
 const decoder = new TextDecoder();
 const ast = JSON.parse(decoder.decode(output.stdout));
 
-console.log(ast);
 ast.inner
-  .flatMap((decl) => decl.inner)
+  .flatMap((decl: any) => decl.inner)
   .filter(
-    (decl) => decl.kind === "FunctionDecl" && !blackList.includes(decl.name)
+    (decl: any) =>
+      decl.kind === "FunctionDecl" && !blackList.includes(decl.name)
   )
-  // .flatMap(crd => crd.inner)
-  .forEach((decl) => {
-    // console.log(
-    //   `${decl.type.qualType} ${decl.name} (${
-    //     decl.inner?.map((p) => p.name).join(", ")
-    //   })`,
-    // );
-
+  .forEach((decl: any) => {
     const returnType = (decl.type.qualType as string)
       .match(/(\S+\s?\*?)\(/)?.[1]
       .trim();
 
-    const result = conversionTable[returnType]
-      ? conversionTable[returnType]
-      : returnType?.includes("*")
-      ? "pointer"
-      : "invalid";
+    const result =
+      returnType && conversionTable[returnType]
+        ? conversionTable[returnType]
+        : returnType?.includes("*")
+        ? "pointer"
+        : "invalid";
 
-    const parameters = decl.inner
-      // .filter((p) => p.type === "ParmVarDecl");
-      .map((p) =>
-        conversionTable[p.type.qualType]
-          ? conversionTable[p.type.qualType]
-          : p.type.qualType?.includes("*")
-          ? "pointer"
-          : "invalid"
-      );
+    const parameters = decl.inner.map((p: any) =>
+      conversionTable[p.type.qualType]
+        ? conversionTable[p.type.qualType]
+        : p.type.qualType?.includes("*")
+        ? "pointer"
+        : "invalid"
+    );
 
     if (parameters.includes(undefined)) {
       console.log(decl);
@@ -85,13 +78,15 @@ ast.inner
     };
   });
 
-Deno.writeFileSync(
-  import.meta.dirname + "/nanovgSymbols.ts",
-  new TextEncoder().encode(
-    `export const NANOVG_SYMBOLS: Deno.ForeignLibraryInterface = ${JSON.stringify(
-      symbols,
-      null,
-      2
-    )} as const;`
-  )
-);
+const fileContent = `
+// !!! DO NOT EDIT !!! AUTO GENERATED !!!
+// prettier-ignore
+export const NANOVG_SYMBOLS = ${JSON.stringify(symbols)} as const;
+
+// For type checking
+NANOVG_SYMBOLS as Deno.ForeignLibraryInterface;
+`;
+
+const outfilePath = import.meta.dirname + "/nanovgSymbols.ts";
+Deno.writeFileSync(outfilePath, new TextEncoder().encode(fileContent));
+new Deno.Command(Deno.execPath(), { args: ["fmt", outfilePath] }).outputSync();

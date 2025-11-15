@@ -2,7 +2,7 @@
 //   float r,g,b,a;
 // };
 
-export const STRUCT_NVGcolor = {
+export const STRUCT_NVGcolor: Deno.NativeStructType = {
   struct: ["f32", "f32", "f32", "f32"],
 };
 

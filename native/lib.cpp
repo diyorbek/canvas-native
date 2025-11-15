@@ -43,6 +43,14 @@ Color StrokeStyleToColor(char* text) {
   return Color{red, green, blue, 0xFF};
 }
 
+NVGcolor StrokeStyleToNVGColor(char* text) {
+  unsigned char red = hexCharToValue(text[1]);
+  unsigned char green = hexCharToValue(text[2]);
+  unsigned char blue = hexCharToValue(text[3]);
+
+  return NVGcolor{(float)red, (float)green, (float)blue, 0xFF};
+}
+
 void CreateWindow(int width, int height, const char* title,
                   void (*init_callback)(void* ctx), void (*render_callback)()) {
   InitWindow(width, height, title);
@@ -69,15 +77,5 @@ void CreateWindow(int width, int height, const char* title,
 
   nvgDeleteGL3(nvgCtx);
   CloseWindow();
-}
-
-void StrokeRect(float posX, float posY, float width, float height, char* color,
-                float lineThick) {
-  DrawRectangleLinesEx({posX, posY, width, height}, lineThick,
-                       StrokeStyleToColor(color));
-}
-
-void FillRect(float posX, float posY, float width, float height, char* color) {
-  DrawRectangle(posX, posY, width, height, StrokeStyleToColor(color));
 }
 }

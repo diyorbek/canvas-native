@@ -1,10 +1,11 @@
 /// <reference lib="dom" />
 
 import { ffi } from "./ffi.ts";
+import { stringToBuffer } from "./utils.ts";
 
 type SlimCanvasRenderingContext2D = Omit<
   CanvasRenderingContext2D,
-  "canvas" | "getTransform"
+  "canvas" | "filter" | "getTransform" | "lang"
 >;
 
 class NativeRenderingContext2D {
@@ -15,31 +16,31 @@ export class RenderingContext2D
   extends NativeRenderingContext2D
   implements SlimCanvasRenderingContext2D
 {
-  _direction: CanvasDirection = "ltr";
-  _fillStyle: string | CanvasGradient | CanvasPattern = "#000000";
-  _font: string = "10px sans-serif";
-  _fontKerning: CanvasFontKerning = "auto";
-  _fontStretch: CanvasFontStretch = "normal";
-  _fontVariantCaps: CanvasFontVariantCaps = "normal";
-  _globalAlpha: number = 1;
-  _globalCompositeOperation: GlobalCompositeOperation = "source-over";
-  _imageSmoothingEnabled: boolean = true;
-  _imageSmoothingQuality: ImageSmoothingQuality = "low";
-  _letterSpacing: string = "0px";
-  _lineCap: CanvasLineCap = "butt";
-  _lineDashOffset: number = 0;
-  _lineJoin: CanvasLineJoin = "miter";
-  _lineWidth: number = 10;
-  _miterLimit: number = 10;
-  _shadowBlur: number = 0;
-  _shadowColor: string = "rgba(0, 0, 0, 0)";
-  _shadowOffsetX: number = 0;
-  _shadowOffsetY: number = 0;
-  _strokeStyle: string | CanvasGradient | CanvasPattern = "#000000";
-  _textAlign: CanvasTextAlign = "start";
-  _textBaseline: CanvasTextBaseline = "alphabetic";
-  _textRendering: CanvasTextRendering = "auto";
-  _wordSpacing: string = "0px";
+  private _direction: CanvasDirection = "ltr";
+  private _fillStyle: string | CanvasGradient | CanvasPattern = "#000";
+  private _font: string = "10px sans-serif";
+  private _fontKerning: CanvasFontKerning = "auto";
+  private _fontStretch: CanvasFontStretch = "normal";
+  private _fontVariantCaps: CanvasFontVariantCaps = "normal";
+  private _globalAlpha: number = 1;
+  private _globalCompositeOperation: GlobalCompositeOperation = "source-over";
+  private _imageSmoothingEnabled: boolean = true;
+  private _imageSmoothingQuality: ImageSmoothingQuality = "low";
+  private _letterSpacing: string = "0px";
+  private _lineCap: CanvasLineCap = "butt";
+  private _lineDashOffset: number = 0;
+  private _lineJoin: CanvasLineJoin = "miter";
+  private _lineWidth: number = 10;
+  private _miterLimit: number = 10;
+  private _shadowBlur: number = 0;
+  private _shadowColor: string = "rgba(0, 0, 0, 0)";
+  private _shadowOffsetX: number = 0;
+  private _shadowOffsetY: number = 0;
+  private _strokeStyle: string | CanvasGradient | CanvasPattern = "#000";
+  private _textAlign: CanvasTextAlign = "start";
+  private _textBaseline: CanvasTextBaseline = "alphabetic";
+  private _textRendering: CanvasTextRendering = "auto";
+  private _wordSpacing: string = "0px";
 
   get direction() {
     return this._direction;
@@ -52,14 +53,14 @@ export class RenderingContext2D
     return this._fillStyle;
   }
   set fillStyle(value: string | CanvasGradient | CanvasPattern) {
-    ffi.symbols.nvgStrokeWidth(this.nativeCtx, value);
+    ffi.symbols.nvg(this.nativeCtx, value);
   }
 
   get font() {
     return this._font;
   }
   set font(value: string) {
-    ffi.symbols.nvgStrokeWidth(this.nativeCtx, value);
+    ffi.symbols.nvgFontFace(this.nativeCtx, value);
   }
 
   get fontKerning() {
@@ -185,7 +186,12 @@ export class RenderingContext2D
     return this._strokeStyle;
   }
   set strokeStyle(value: string | CanvasGradient | CanvasPattern) {
-    ffi.symbols.nvgStrokeWidth(this.nativeCtx, value);
+    if (typeof value !== "string") return;
+
+    ffi.symbols.nvgStrokeColor(
+      this.nativeCtx,
+      ffi.symbols.StrokeStyleToNVGColor(stringToBuffer(value))
+    );
   }
 
   get textAlign() {
@@ -233,7 +239,7 @@ export class RenderingContext2D
     throw new Error("Method not implemented.");
   }
   beginPath(): void {
-    throw new Error("Method not implemented.");
+    ffi.symbols.nvgBeginPath(this.nativeCtx);
   }
   clip(path?: unknown, fillRule?: unknown): void {
     throw new Error("Method not implemented.");
@@ -253,7 +259,7 @@ export class RenderingContext2D
     throw new Error("Method not implemented.");
   }
   stroke(path?: unknown): void {
-    throw new Error("Method not implemented.");
+    ffi.symbols.nvgStroke(this.nativeCtx);
   }
 
   createConicGradient(
@@ -287,7 +293,7 @@ export class RenderingContext2D
   ): CanvasGradient {
     throw new Error("Method not implemented.");
   }
-  filter: string;
+
   createImageData(sw: unknown, sh?: unknown, settings?: unknown): ImageData {
     throw new Error("Method not implemented.");
   }
@@ -336,7 +342,7 @@ export class RenderingContext2D
     throw new Error("Method not implemented.");
   }
   closePath(): void {
-    throw new Error("Method not implemented.");
+    ffi.symbols.nvgClosePath(this.nativeCtx);
   }
   ellipse(
     x: number,
@@ -351,10 +357,10 @@ export class RenderingContext2D
     throw new Error("Method not implemented.");
   }
   lineTo(x: number, y: number): void {
-    throw new Error("Method not implemented.");
+    ffi.symbols.nvgLineTo(this.nativeCtx, x, y);
   }
   moveTo(x: number, y: number): void {
-    throw new Error("Method not implemented.");
+    ffi.symbols.nvgMoveTo(this.nativeCtx, x, y);
   }
   quadraticCurveTo(cpx: number, cpy: number, x: number, y: number): void {
     throw new Error("Method not implemented.");
@@ -382,10 +388,26 @@ export class RenderingContext2D
     throw new Error("Method not implemented.");
   }
   fillRect(x: number, y: number, w: number, h: number): void {
-    throw new Error("Method not implemented.");
+    this.beginPath();
+    ffi.symbols.nvgRect(this.nativeCtx, x, y, w, h);
+    ffi.symbols.nvgFillColor(
+      this.nativeCtx,
+      ffi.symbols.StrokeStyleToNVGColor(
+        stringToBuffer(this.fillStyle as string)
+      )
+    );
+    ffi.symbols.nvgFill(this.nativeCtx);
   }
   strokeRect(x: number, y: number, w: number, h: number): void {
-    throw new Error("Method not implemented.");
+    this.beginPath();
+    ffi.symbols.nvgRect(this.nativeCtx, x, y, w, h);
+    ffi.symbols.nvgStrokeColor(
+      this.nativeCtx,
+      ffi.symbols.StrokeStyleToNVGColor(
+        stringToBuffer(this.fillStyle as string)
+      )
+    );
+    ffi.symbols.nvgStroke(this.nativeCtx);
   }
 
   isContextLost(): boolean {

@@ -1,8 +1,8 @@
 #include <cctype>
-#include <iostream>
 #include <vector>
 
 #include "raylib.h"
+#include "stdio.h"
 
 #if defined(__APPLE__)
 #include <OpenGL/gl3.h>
@@ -66,7 +66,7 @@ void CreateWindow(int width, int height, const char* title,
 
   while (!WindowShouldClose()) {
     BeginDrawing();
-    ClearBackground(RAYWHITE);
+    ClearBackground(WHITE);
     nvgBeginFrame(nvgCtx, GetScreenWidth(), GetScreenHeight(), 1.0f);
 
     render_callback();
@@ -77,5 +77,14 @@ void CreateWindow(int width, int height, const char* title,
 
   nvgDeleteGL3(nvgCtx);
   CloseWindow();
+}
+
+void nvgClearRect(NVGcontext* vg, float x, float y, float w, float h) {
+  nvgGlobalCompositeOperation(vg, NVG_DESTINATION_OUT);
+  nvgBeginPath(vg);
+  nvgRect(vg, x, y, w, h);
+  nvgFillColor(vg, nvgRGBA(255, 255, 255, 255));  // alpha=255 erases fully
+  nvgFill(vg);
+  nvgGlobalCompositeOperation(vg, NVG_SOURCE_OVER);  // restore
 }
 }

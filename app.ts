@@ -1,23 +1,27 @@
 import { createWindow } from "./canvas-native.ts";
 import { RenderingContext2D } from "./src/context2d.ts";
 
-createWindow(800, 500, "Canvas Native Demo", (ctx: RenderingContext2D) => {
-  // Set line width
-  ctx.lineWidth = 10;
+const width = 800;
+const height = 500;
 
-  ctx.strokeStyle = "#000";
+createWindow(width, height, "Canvas Native Demo", (ctx: RenderingContext2D) => {
+  // drawHouseDemo(ctx, width, height);
+  // drawRects(ctx, width, height);
+  ctx.fillStyle = "#f00";
+  ctx.fillRect(50, 50, 150, 100);
 
-  // Wall
-  ctx.strokeRect(75, 140, 150, 110);
+  ctx.strokeStyle = "#00f";
+  ctx.lineWidth = 5;
+  ctx.strokeRect(250, 50, 150, 100);
 
-  // Door
-  ctx.fillRect(130, 190, 40, 60);
-
-  // // Roof
-  ctx.beginPath();
-  ctx.moveTo(50, 140);
-  ctx.lineTo(150, 60);
-  ctx.lineTo(250, 140);
-  ctx.closePath();
-  ctx.stroke();
+  // clearRect punches a hole
+  ctx.clearRect(80, 80, 90, 40);
+  // drawPaths(ctx, width, height);
+  // drawArcs(ctx, width, height);
+  // drawCurves(ctx, width, height);
+  // drawText(ctx, width, height);
+  // drawStyles(ctx, width, height);
+  // drawTransforms(ctx, width, height);
+  // drawImages(ctx, width, height);
+  // drawAlpha(ctx, width, height);
 });

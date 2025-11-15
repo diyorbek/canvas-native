@@ -1,5 +1,5 @@
 import { NANOVG_SYMBOLS } from "./nanovgSymbols.ts";
-import { STRUCT_NVGcolor } from "./structs.ts";
+import { STRUCT_Color, STRUCT_NVGcolor } from "./structs.ts";
 
 export const ffi = Deno.dlopen("./build/libcanvasnative.dylib", {
   // Custom functions
@@ -10,7 +10,7 @@ export const ffi = Deno.dlopen("./build/libcanvasnative.dylib", {
 
   StrokeStyleToColor: {
     parameters: ["buffer"],
-    result: { struct: ["u8", "u8", "u8", "u8"] },
+    result: STRUCT_Color,
   },
 
   StrokeStyleToNVGColor: {
@@ -20,6 +20,10 @@ export const ffi = Deno.dlopen("./build/libcanvasnative.dylib", {
 
   // NanoVG
   ...NANOVG_SYMBOLS,
+  nvgClearRect: {
+    parameters: ["pointer", "f32", "f32", "f32", "f32"],
+    result: "void",
+  },
 
   // Raylib
 } as const);

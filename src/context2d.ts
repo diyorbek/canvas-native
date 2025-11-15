@@ -53,7 +53,13 @@ export class RenderingContext2D
     return this._fillStyle;
   }
   set fillStyle(value: string | CanvasGradient | CanvasPattern) {
-    ffi.symbols.nvg(this.nativeCtx, value);
+    if (typeof value !== "string") return;
+
+    this._fillStyle = value;
+    ffi.symbols.nvgFillColor(
+      this.nativeCtx,
+      ffi.symbols.StrokeStyleToNVGColor(stringToBuffer(this._fillStyle))
+    );
   }
 
   get font() {
@@ -188,9 +194,11 @@ export class RenderingContext2D
   set strokeStyle(value: string | CanvasGradient | CanvasPattern) {
     if (typeof value !== "string") return;
 
+    this._strokeStyle = value;
+
     ffi.symbols.nvgStrokeColor(
       this.nativeCtx,
-      ffi.symbols.StrokeStyleToNVGColor(stringToBuffer(value))
+      ffi.symbols.StrokeStyleToNVGColor(stringToBuffer(this._strokeStyle))
     );
   }
 
@@ -385,7 +393,7 @@ export class RenderingContext2D
     throw new Error("Method not implemented.");
   }
   clearRect(x: number, y: number, w: number, h: number): void {
-    throw new Error("Method not implemented.");
+    ffi.symbols.nvgClearRect(this.nativeCtx, x, y, w, h);
   }
   fillRect(x: number, y: number, w: number, h: number): void {
     this.beginPath();
@@ -404,7 +412,7 @@ export class RenderingContext2D
     ffi.symbols.nvgStrokeColor(
       this.nativeCtx,
       ffi.symbols.StrokeStyleToNVGColor(
-        stringToBuffer(this.fillStyle as string)
+        stringToBuffer(this.strokeStyle as string)
       )
     );
     ffi.symbols.nvgStroke(this.nativeCtx);
@@ -449,7 +457,15 @@ export class RenderingContext2D
     e?: unknown,
     f?: unknown
   ): void {
-    throw new Error("Method not implemented.");
+    ffi.symbols.nvgTransform(
+      this.nativeCtx,
+      a as number,
+      b as number,
+      c as number,
+      d as number,
+      e as number,
+      f as number
+    );
   }
   transform(
     a: number,

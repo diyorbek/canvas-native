@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HTML5 Canvas Method Test</title>
+    <!-- Load Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      /* Simple style for the canvas itself */
+      canvas {
+        background-color: #ffffff;
+        border-radius: 0.5rem;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        border: 1px solid #e2e8f0;
+      }
+    </style>
+  </head>
+  <body class="bg-gray-100 font-sans p-4 md:p-8">
+    <div class="container mx-auto max-w-4xl">
+      <h1 class="text-3xl font-bold text-center text-gray-800 mb-6">
+        HTML5 Canvas 2D Method Tester
+      </h1>
+
+      <!-- Button controls to trigger different tests -->
+      <div class="flex flex-wrap justify-center gap-2 mb-6">
+        <button
+          id="btnRects"
+          class="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg shadow transition-all"
+        >
+          Shapes (Rects)
+        </button>
+        <button
+          id="btnPaths"
+          class="bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-4 rounded-lg shadow transition-all"
+        >
+          Paths & Lines
+        </button>
+        <button
+          id="btnArcs"
+          class="bg-indigo-500 hover:bg-indigo-600 text-white font-medium py-2 px-4 rounded-lg shadow transition-all"
+        >
+          Arcs & Circles
+        </button>
+        <button
+          id="btnCurves"
+          class="bg-purple-500 hover:bg-purple-600 text-white font-medium py-2 px-4 rounded-lg shadow transition-all"
+        >
+          Curves
+        </button>
+        <button
+          id="btnText"
+          class="bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-4 rounded-lg shadow transition-all"
+        >
+          Text
+        </button>
+        <button
+          id="btnStyles"
+          class="bg-yellow-500 hover:bg-yellow-600 text-black font-medium py-2 px-4 rounded-lg shadow transition-all"
+        >
+          Styles & Caps
+        </button>
+        <button
+          id="btnTransforms"
+          class="bg-pink-500 hover:bg-pink-600 text-white font-medium py-2 px-4 rounded-lg shadow transition-all"
+        >
+          Transforms
+        </button>
+        <button
+          id="btnImage"
+          class="bg-teal-500 hover:bg-teal-600 text-white font-medium py-2 px-4 rounded-lg shadow transition-all"
+        >
+          Image
+        </button>
+        <button
+          id="btnAlpha"
+          class="bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-lg shadow transition-all"
+        >
+          Alpha & Composite
+        </button>
+      </div>
+
+      <!-- The Canvas Element -->
+      <canvas
+        id="myCanvas"
+        width="800"
+        height="600"
+        class="w-full max-w-4xl mx-auto"
+      ></canvas>
+    </div>
+
+    <script type="module">
+      import * as demos from "./demo.js";
+
+      window.addEventListener("DOMContentLoaded", () => {
+        const canvas = document.getElementById("myCanvas");
+        const ctx = canvas.getContext("2d");
+        const W = canvas.width;
+        const H = canvas.height;
+
+        // --- Event Listeners ---
+        document
+          .getElementById("btnRects")
+          .addEventListener("click", () => demos.drawRects(ctx, W, H));
+        document
+          .getElementById("btnPaths")
+          .addEventListener("click", () => demos.drawPaths(ctx, W, H));
+        document
+          .getElementById("btnArcs")
+          .addEventListener("click", () => demos.drawArcs(ctx, W, H));
+        document
+          .getElementById("btnCurves")
+          .addEventListener("click", () => demos.drawCurves(ctx, W, H));
+        document
+          .getElementById("btnText")
+          .addEventListener("click", () => demos.drawText(ctx, W, H));
+        document
+          .getElementById("btnStyles")
+          .addEventListener("click", () => demos.drawStyles(ctx, W, H));
+        document
+          .getElementById("btnTransforms")
+          .addEventListener("click", () => demos.drawTransforms(ctx, W, H));
+        document
+          .getElementById("btnImage")
+          .addEventListener("click", () => demos.drawImages(ctx, W, H));
+        document
+          .getElementById("btnAlpha")
+          .addEventListener("click", () => demos.drawAlpha(ctx, W, H));
+
+        // Initial draw
+        drawRects();
+      });
+    </script>
+  </body>
+</html>

@@ -33,6 +33,12 @@ void nvgClearRect(NVGcontext* vg, float x, float y, float w, float h) {
   nvgFill(vg);
 
   nvgRestore(vg);
+
+  // dummy rect to fix case where nvgClearRect() is called as last intsruction
+  // which corrupts blending
+  nvgBeginPath(vg);
+  nvgRect(vg, 0, 0, 0, 0);
+  nvgFill(vg);
 }
 
 RenderTexture2D CreateTransparentRenderTexture(int width, int height) {
@@ -66,16 +72,16 @@ void RenderForegroundLayer(RenderTexture2D& foregroundTexture, NVGcontext* ctx,
   ClearBackground(BLANK);  // Start with fully transparent
 
   nvgBeginFrame(ctx, SCREEN_WIDTH, SCREEN_HEIGHT, 1.0f);
-
   callback(ctx);
-
   nvgEndFrame(ctx);
+
   EndTextureMode();
 }
 
 void CreateWindow(int width, int height, const char* title,
                   void (*callback)(NVGcontext* ctx)) {
   InitWindow(width, height, title);
+  SetTargetFPS(60);
   SetWindowPosition(0, 0);
 
   NVGcontext* ctx = nvgCreateGL3(NVG_ANTIALIAS | NVG_STENCIL_STROKES);
@@ -135,7 +141,7 @@ int main(void) {
     // Draw blue rectangle
     nvgBeginPath(ctx);
     nvgRect(ctx, 100, 200, 400, 200);
-    nvgFillColor(ctx, nvgRGBA(50, 100, 255, 255));
+    nvgFillColor(ctx, nvgRGBA(50, 100, 155, 255));
     nvgFill(ctx);
 
     // Draw border for visibility
@@ -148,6 +154,10 @@ int main(void) {
     // Clear a rectangular hole in the middle (should reveal background)
     nvgClearRect(ctx, 150, 250, 150, 100);
 
+    nvgBeginPath(ctx);
+    nvgRect(ctx, 0, 0, 100, 100);
+    nvgFill(ctx);
+
     // Draw text label on the rectangle
     nvgFontSize(ctx, 18.0f);
     nvgFontFace(ctx, "sans");
@@ -156,11 +166,6 @@ int main(void) {
     nvgText(ctx, 100, 300, "Foreground Foreground Foreground Foreground", NULL);
 
     nvgClearRect(ctx, 150, 250, 150, 100);
-
-    nvgBeginPath(ctx);
-    nvgRect(ctx, 120, 220, 100, 100);
-    nvgFillColor(ctx, nvgRGBA(150, 100, 155, 255));
-    nvgFill(ctx);
   };
 
   CreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Raylib + NanoVG Example",

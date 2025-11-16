@@ -1,6 +1,14 @@
 /**
+ * @import { RenderingContext2D } from '../src/context2d.ts';
+ */
+
+/**
  * Clears the canvas and resets any transformations.
  * Draws a light border for context.
+ *
+ * @param {RenderingContext2D} ctx
+ * @param {number} W
+ * @param {number} H
  */
 function clearCanvas(ctx, W, H) {
   // Reset any transformations (like translate, rotate)
@@ -17,6 +25,12 @@ function clearCanvas(ctx, W, H) {
 // --- Drawing Functions (Tests) ---
 
 // Test 1: fillRect, strokeRect, clearRect
+/**
+ *
+ * @param {RenderingContext2D} ctx
+ * @param {number} W
+ * @param {number} H
+ */
 export function drawRects(ctx, W, H) {
   clearCanvas(ctx, W, H);
   ctx.fillStyle = "#f00";
@@ -31,6 +45,12 @@ export function drawRects(ctx, W, H) {
 }
 
 // Test 2: beginPath, moveTo, lineTo, closePath, stroke, fill
+/**
+ *
+ * @param {RenderingContext2D} ctx
+ * @param {number} W
+ * @param {number} H
+ */
 export function drawPaths(ctx, W, H) {
   clearCanvas(ctx, W, H);
   ctx.beginPath();
@@ -48,6 +68,12 @@ export function drawPaths(ctx, W, H) {
 }
 
 // Test 3: arc, arcTo
+/**
+ *
+ * @param {RenderingContext2D} ctx
+ * @param {number} W
+ * @param {number} H
+ */
 export function drawArcs(ctx, W, H) {
   clearCanvas(ctx, W, H);
   // Full circle
@@ -77,6 +103,12 @@ export function drawArcs(ctx, W, H) {
 }
 
 // Test 4: quadraticCurveTo, bezierCurveTo
+/**
+ *
+ * @param {RenderingContext2D} ctx
+ * @param {number} W
+ * @param {number} H
+ */
 export function drawCurves(ctx, W, H) {
   clearCanvas(ctx, W, H);
   // Quadratic curve (1 control point)
@@ -99,6 +131,12 @@ export function drawCurves(ctx, W, H) {
 }
 
 // Test 5: fillText, strokeText, font, textAlign, textBaseline
+/**
+ *
+ * @param {RenderingContext2D} ctx
+ * @param {number} W
+ * @param {number} H
+ */
 export function drawText(ctx, W, H) {
   clearCanvas(ctx, W, H);
   ctx.font = "48px Arial";
@@ -113,6 +151,12 @@ export function drawText(ctx, W, H) {
 }
 
 // Test 6: lineWidth, lineCap, lineJoin
+/**
+ *
+ * @param {RenderingContext2D} ctx
+ * @param {number} W
+ * @param {number} H
+ */
 export function drawStyles(ctx, W, H) {
   clearCanvas(ctx, W, H);
   ctx.lineWidth = 20;
@@ -159,6 +203,12 @@ export function drawStyles(ctx, W, H) {
 }
 
 // Test 7: translate, rotate, scale, save, restore
+/**
+ *
+ * @param {RenderingContext2D} ctx
+ * @param {number} W
+ * @param {number} H
+ */
 export function drawTransforms(ctx, W, H) {
   clearCanvas(ctx, W, H);
 
@@ -191,6 +241,12 @@ export function drawTransforms(ctx, W, H) {
 }
 
 // Test 8: drawImage
+/**
+ *
+ * @param {RenderingContext2D} ctx
+ * @param {number} W
+ * @param {number} H
+ */
 export function drawImages(ctx, W, H) {
   clearCanvas(ctx, W, H);
   const img = new Image();
@@ -218,6 +274,12 @@ export function drawImages(ctx, W, H) {
 }
 
 // Test 9: globalAlpha, globalCompositeOperation
+/**
+ *
+ * @param {RenderingContext2D} ctx
+ * @param {number} W
+ * @param {number} H
+ */
 export function drawAlpha(ctx, W, H) {
   clearCanvas(ctx, W, H);
   // globalAlpha
@@ -241,6 +303,12 @@ export function drawAlpha(ctx, W, H) {
   ctx.globalCompositeOperation = "source-over";
 }
 
+/**
+ *
+ * @param {RenderingContext2D} ctx
+ * @param {number} W
+ * @param {number} H
+ */
 export function drawHouseDemo(ctx, W, H) {
   // Set line width
   ctx.lineWidth = 10;

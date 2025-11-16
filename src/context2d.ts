@@ -3,6 +3,11 @@
 import { ffi } from "./ffi.ts";
 import { stringToBuffer } from "./utils.ts";
 
+enum NVGwinding {
+  NVG_CCW = 1, // Winding for solid shapes
+  NVG_CW = 2, // Winding for holes
+}
+
 type SlimCanvasRenderingContext2D = Omit<
   CanvasRenderingContext2D,
   "canvas" | "filter" | "getTransform" | "lang"
@@ -253,7 +258,7 @@ export class RenderingContext2D
     throw new Error("Method not implemented.");
   }
   fill(path?: unknown, fillRule?: unknown): void {
-    throw new Error("Method not implemented.");
+    ffi.symbols.nvgFill(this.nativeCtx);
   }
   isPointInPath(
     path: unknown,
@@ -332,9 +337,17 @@ export class RenderingContext2D
     radius: number,
     startAngle: number,
     endAngle: number,
-    counterclockwise?: boolean
+    counterclockwise = false
   ): void {
-    throw new Error("Method not implemented.");
+    ffi.symbols.nvgArc(
+      this.nativeCtx,
+      x,
+      y,
+      radius,
+      startAngle,
+      endAngle,
+      counterclockwise ? NVGwinding.NVG_CCW : NVGwinding.NVG_CW
+    );
   }
   arcTo(x1: number, y1: number, x2: number, y2: number, radius: number): void {
     throw new Error("Method not implemented.");

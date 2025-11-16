@@ -59,10 +59,12 @@ export function drawPaths(ctx, W, H) {
   ctx.lineTo(250, 300);
   ctx.closePath(); // Connects back to start (50, 300)
 
-  ctx.fillStyle = "rgba(0, 255, 0, 0.5)";
+  // ctx.fillStyle = "rgba(0, 255, 0, 0.5)";
+  ctx.fillStyle = "#0f0";
   ctx.fill();
 
-  ctx.strokeStyle = "darkgreen";
+  // ctx.strokeStyle = "darkgreen";
+  ctx.strokeStyle = "#500";
   ctx.lineWidth = 3;
   ctx.stroke();
 }
@@ -80,7 +82,7 @@ export function drawArcs(ctx, W, H) {
   ctx.beginPath();
   // arc(x, y, radius, startAngle, endAngle, counterClockwise)
   ctx.arc(200, 300, 70, 0, Math.PI * 2);
-  ctx.fillStyle = "gold";
+  ctx.fillStyle = "#ff0";
   ctx.fill();
 
   // Half circle (pac-man)
@@ -88,16 +90,16 @@ export function drawArcs(ctx, W, H) {
   ctx.moveTo(400, 300); // Move to center
   ctx.arc(400, 300, 70, 0.25 * Math.PI, 1.75 * Math.PI);
   ctx.closePath();
-  ctx.fillStyle = "yellow";
+  ctx.fillStyle = "#ff0";
   ctx.fill();
-  ctx.strokeStyle = "black";
+  ctx.strokeStyle = "#000";
   ctx.lineWidth = 1;
   ctx.stroke();
 
   // Just an arc line
   ctx.beginPath();
   ctx.arc(600, 300, 70, 0, Math.PI, true); // counter-clockwise
-  ctx.strokeStyle = "purple";
+  ctx.strokeStyle = "#f0f";
   ctx.lineWidth = 5;
   ctx.stroke();
 }

@@ -8,8 +8,8 @@ const height = 500;
 createWindow(width, height, "Canvas Native Demo", (ctx: RenderingContext2D) => {
   demos.drawHouseDemo(ctx, width, height);
   demos.drawRects(ctx, width, height);
-  // demos.drawPaths(ctx, width, height);
-  // demos.drawArcs(ctx, width, height);
+  demos.drawPaths(ctx, width, height);
+  demos.drawArcs(ctx, width, height);
   // demos.drawCurves(ctx, width, height);
   // demos.drawText(ctx, width, height);
   // demos.drawStyles(ctx, width, height);

@@ -8,12 +8,12 @@ export const ffi = Deno.dlopen("./build/libcanvasnative.dylib", {
     result: "void",
   },
 
-  StrokeStyleToColor: {
+  StyleToColor: {
     parameters: ["buffer"],
     result: STRUCT_Color,
   },
 
-  StrokeStyleToNVGColor: {
+  StyleToNVGColor: {
     parameters: ["buffer"],
     result: STRUCT_NVGcolor,
   },

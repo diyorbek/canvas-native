@@ -58,7 +58,7 @@ export class RenderingContext2D
     this._fillStyle = value;
     ffi.symbols.nvgFillColor(
       this.nativeCtx,
-      ffi.symbols.StrokeStyleToNVGColor(stringToBuffer(this._fillStyle))
+      ffi.symbols.StyleToNVGColor(stringToBuffer(this._fillStyle))
     );
   }
 
@@ -198,7 +198,7 @@ export class RenderingContext2D
 
     ffi.symbols.nvgStrokeColor(
       this.nativeCtx,
-      ffi.symbols.StrokeStyleToNVGColor(stringToBuffer(this._strokeStyle))
+      ffi.symbols.StyleToNVGColor(stringToBuffer(this._strokeStyle))
     );
   }
 
@@ -400,9 +400,7 @@ export class RenderingContext2D
     ffi.symbols.nvgRect(this.nativeCtx, x, y, w, h);
     ffi.symbols.nvgFillColor(
       this.nativeCtx,
-      ffi.symbols.StrokeStyleToNVGColor(
-        stringToBuffer(this.fillStyle as string)
-      )
+      ffi.symbols.StyleToNVGColor(stringToBuffer(this.fillStyle as string))
     );
     ffi.symbols.nvgFill(this.nativeCtx);
   }
@@ -411,9 +409,7 @@ export class RenderingContext2D
     ffi.symbols.nvgRect(this.nativeCtx, x, y, w, h);
     ffi.symbols.nvgStrokeColor(
       this.nativeCtx,
-      ffi.symbols.StrokeStyleToNVGColor(
-        stringToBuffer(this.strokeStyle as string)
-      )
+      ffi.symbols.StyleToNVGColor(stringToBuffer(this.strokeStyle as string))
     );
     ffi.symbols.nvgStroke(this.nativeCtx);
   }

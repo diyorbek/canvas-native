@@ -64,7 +64,7 @@ void RenderNvgLayer(RenderTexture2D& texture, NVGcontext* ctx, int width,
 
 extern "C" {
 
-Color StrokeStyleToColor(char* text) {
+Color StyleToColor(char* text) {
   unsigned char red = hexCharToValue(text[1]);
   unsigned char green = hexCharToValue(text[2]);
   unsigned char blue = hexCharToValue(text[3]);
@@ -72,7 +72,7 @@ Color StrokeStyleToColor(char* text) {
   return Color{red, green, blue, 0xFF};
 }
 
-NVGcolor StrokeStyleToNVGColor(char* text) {
+NVGcolor StyleToNVGColor(char* text) {
   unsigned char red = hexCharToValue(text[1]);
   unsigned char green = hexCharToValue(text[2]);
   unsigned char blue = hexCharToValue(text[3]);

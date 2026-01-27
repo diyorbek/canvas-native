@@ -24,7 +24,7 @@ FetchContent_MakeAvailable(nanovg)
 set(NANOVG_SRC ${nanovg_SOURCE_DIR}/src/nanovg.c)
 add_library(nanovg ${NANOVG_SRC})
 target_include_directories(nanovg PUBLIC ${nanovg_SOURCE_DIR}/src)
-target_compile_definitions(nanovg PUBLIC NANOVG_GL3_IMPLEMENTATION NVG_NO_STB)
+target_compile_definitions(nanovg PUBLIC NANOVG_GL3_IMPLEMENTATION NVG_NO_STB) # NVG_NO_STB - because Raylib also has this library causing duplicate symbols error
 target_compile_options(nanovg PUBLIC -fvisibility=default)
 
 # app executable

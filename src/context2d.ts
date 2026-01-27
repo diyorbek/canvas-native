@@ -8,6 +8,49 @@ enum NVGwinding {
   NVG_CW = 2, // Winding for holes
 }
 
+enum NVGlineCap {
+  NVG_BUTT,
+  NVG_ROUND,
+  NVG_SQUARE,
+  NVG_BEVEL,
+  NVG_MITER,
+}
+
+enum NVGalign {
+  // Horizontal align
+  NVG_ALIGN_LEFT = 1 << 0, // Default, align text horizontally to left.
+  NVG_ALIGN_CENTER = 1 << 1, // Align text horizontally to center.
+  NVG_ALIGN_RIGHT = 1 << 2, // Align text horizontally to right.
+  // Vertical align
+  NVG_ALIGN_TOP = 1 << 3, // Align text vertically to top.
+  NVG_ALIGN_MIDDLE = 1 << 4, // Align text vertically to middle.
+  NVG_ALIGN_BOTTOM = 1 << 5, // Align text vertically to bottom.
+  NVG_ALIGN_BASELINE = 1 << 6, // Default, align text vertically to baseline.
+}
+
+enum NVGcompositeOperation {
+  NVG_SOURCE_OVER,
+  NVG_SOURCE_IN,
+  NVG_SOURCE_OUT,
+  NVG_ATOP,
+  NVG_DESTINATION_OVER,
+  NVG_DESTINATION_IN,
+  NVG_DESTINATION_OUT,
+  NVG_DESTINATION_ATOP,
+  NVG_LIGHTER,
+  NVG_COPY,
+  NVG_XOR,
+}
+
+enum NVGimageFlags {
+  NVG_IMAGE_GENERATE_MIPMAPS = 1 << 0, // Generate mipmaps during creation of the image.
+  NVG_IMAGE_REPEATX = 1 << 1, // Repeat image in X direction.
+  NVG_IMAGE_REPEATY = 1 << 2, // Repeat image in Y direction.
+  NVG_IMAGE_FLIPY = 1 << 3, // Flips (inverses) image in Y direction when rendered.
+  NVG_IMAGE_PREMULTIPLIED = 1 << 4, // Image data has premultiplied alpha.
+  NVG_IMAGE_NEAREST = 1 << 5, // Image interpolation is Nearest instead Linear
+}
+
 type SlimCanvasRenderingContext2D = Omit<
   CanvasRenderingContext2D,
   "canvas" | "filter" | "getTransform" | "lang"
@@ -15,6 +58,97 @@ type SlimCanvasRenderingContext2D = Omit<
 
 class NativeRenderingContext2D {
   constructor(protected nativeCtx: Deno.PointerValue) {}
+
+  protected getNvgAlign(align: CanvasTextAlign) {
+    switch (align) {
+      case "left":
+        return NVGalign.NVG_ALIGN_LEFT;
+      case "right":
+        return NVGalign.NVG_ALIGN_RIGHT;
+      case "center":
+        return NVGalign.NVG_ALIGN_CENTER;
+      case "start":
+        return NVGalign.NVG_ALIGN_LEFT;
+      case "end":
+        return NVGalign.NVG_ALIGN_RIGHT;
+      default:
+        return NVGalign.NVG_ALIGN_LEFT;
+    }
+  }
+
+  protected getNvgBaseline(baseline: CanvasTextBaseline) {
+    switch (baseline) {
+      case "top":
+        return NVGalign.NVG_ALIGN_TOP;
+      case "hanging":
+        return NVGalign.NVG_ALIGN_TOP;
+      case "middle":
+        return NVGalign.NVG_ALIGN_MIDDLE;
+      case "alphabetic":
+        return NVGalign.NVG_ALIGN_BASELINE;
+      case "ideographic":
+        return NVGalign.NVG_ALIGN_BASELINE;
+      case "bottom":
+        return NVGalign.NVG_ALIGN_BOTTOM;
+      default:
+        return NVGalign.NVG_ALIGN_BASELINE;
+    }
+  }
+
+  protected getNvgLineCap(lineCap: CanvasLineCap) {
+    switch (lineCap) {
+      case "butt":
+        return NVGlineCap.NVG_BUTT;
+      case "round":
+        return NVGlineCap.NVG_ROUND;
+      case "square":
+        return NVGlineCap.NVG_SQUARE;
+      default:
+        return NVGlineCap.NVG_BUTT;
+    }
+  }
+
+  protected getNvgLineJoin(lineJoin: CanvasLineJoin) {
+    switch (lineJoin) {
+      case "bevel":
+        return NVGlineCap.NVG_BEVEL;
+      case "round":
+        return NVGlineCap.NVG_ROUND;
+      case "miter":
+        return NVGlineCap.NVG_MITER;
+      default:
+        return NVGlineCap.NVG_MITER;
+    }
+  }
+
+  protected getNvgCompositeOperation(operation: GlobalCompositeOperation) {
+    switch (operation) {
+      case "source-over":
+        return NVGcompositeOperation.NVG_SOURCE_OVER;
+      case "source-in":
+        return NVGcompositeOperation.NVG_SOURCE_IN;
+      case "source-out":
+        return NVGcompositeOperation.NVG_SOURCE_OUT;
+      case "source-atop":
+        return NVGcompositeOperation.NVG_ATOP;
+      case "destination-over":
+        return NVGcompositeOperation.NVG_DESTINATION_OVER;
+      case "destination-in":
+        return NVGcompositeOperation.NVG_DESTINATION_IN;
+      case "destination-out":
+        return NVGcompositeOperation.NVG_DESTINATION_OUT;
+      case "destination-atop":
+        return NVGcompositeOperation.NVG_DESTINATION_ATOP;
+      case "lighter":
+        return NVGcompositeOperation.NVG_LIGHTER;
+      case "copy":
+        return NVGcompositeOperation.NVG_COPY;
+      case "xor":
+        return NVGcompositeOperation.NVG_XOR;
+      default:
+        throw new Error("Unsupported composite operation");
+    }
+  }
 }
 
 export class RenderingContext2D
@@ -51,7 +185,7 @@ export class RenderingContext2D
     return this._direction;
   }
   set direction(value: CanvasDirection) {
-    ffi.symbols.nvgStrokeWidth(this.nativeCtx, value);
+    throw new Error("Not implemented.");
   }
 
   get fillStyle() {
@@ -63,7 +197,7 @@ export class RenderingContext2D
     this._fillStyle = value;
     ffi.symbols.nvgFillColor(
       this.nativeCtx,
-      ffi.symbols.StyleToNVGColor(stringToBuffer(this._fillStyle))
+      ffi.symbols.StyleToNVGColor(stringToBuffer(this._fillStyle)),
     );
   }
 
@@ -71,84 +205,87 @@ export class RenderingContext2D
     return this._font;
   }
   set font(value: string) {
-    ffi.symbols.nvgFontFace(this.nativeCtx, value);
+    ffi.symbols.nvgFontSize(this.nativeCtx, 40);
   }
 
   get fontKerning() {
     return this._fontKerning;
   }
   set fontKerning(value: CanvasFontKerning) {
-    ffi.symbols.ker(this.nativeCtx, value);
+    throw new Error("Not implemented.");
   }
 
   get fontStretch() {
     return this._fontStretch;
   }
   set fontStretch(value: CanvasFontStretch) {
-    ffi.symbols.nvgStrokeWidth(this.nativeCtx, value);
+    throw new Error("Not implemented.");
   }
 
   get fontVariantCaps() {
     return this._fontVariantCaps;
   }
   set fontVariantCaps(value: CanvasFontVariantCaps) {
-    ffi.symbols.nvgStrokeWidth(this.nativeCtx, value);
+    throw new Error("Not implemented.");
   }
 
   get globalAlpha() {
     return this._globalAlpha;
   }
   set globalAlpha(value: number) {
-    ffi.symbols.nvgStrokeWidth(this.nativeCtx, value);
+    ffi.symbols.nvgGlobalAlpha(this.nativeCtx, value);
   }
 
   get globalCompositeOperation() {
     return this._globalCompositeOperation;
   }
   set globalCompositeOperation(value: GlobalCompositeOperation) {
-    ffi.symbols.nvgStrokeWidth(this.nativeCtx, value);
+    ffi.symbols.nvgGlobalCompositeOperation(
+      this.nativeCtx,
+      this.getNvgCompositeOperation(value),
+    );
   }
 
   get imageSmoothingEnabled() {
     return this._imageSmoothingEnabled;
   }
   set imageSmoothingEnabled(value: boolean) {
-    ffi.symbols.nvgStrokeWidth(this.nativeCtx, value);
+    throw new Error("Not implemented.");
   }
 
   get imageSmoothingQuality() {
     return this._imageSmoothingQuality;
   }
   set imageSmoothingQuality(value: ImageSmoothingQuality) {
-    ffi.symbols.nvgStrokeWidth(this.nativeCtx, value);
+    throw new Error("Not implemented.");
   }
 
   get letterSpacing() {
     return this._letterSpacing;
   }
   set letterSpacing(value: string) {
-    ffi.symbols.nvgStrokeWidth(this.nativeCtx, value);
+    ffi.symbols.nvgTextLetterSpacing(this.nativeCtx, parseFloat(value));
   }
 
   get lineCap() {
     return this._lineCap;
   }
   set lineCap(value: CanvasLineCap) {
-    ffi.symbols.nvgStrokeWidth(this.nativeCtx, value);
+    ffi.symbols.nvgLineCap(this.nativeCtx, this.getNvgLineCap(value));
   }
 
   get lineDashOffset() {
     return this._lineDashOffset;
   }
   set lineDashOffset(value: number) {
-    ffi.symbols.nvgStrokeWidth(this.nativeCtx, value);
+    throw new Error("Not implemented.");
   }
 
   get lineJoin() {
     return this._lineJoin;
   }
   set lineJoin(value: CanvasLineJoin) {
-    ffi.symbols.nvgStrokeWidth(this.nativeCtx, value);
+    ffi.symbols.nvgLineJoin(this.nativeCtx, this.getNvgLineJoin(value));
   }
 
   get lineWidth() {
@@ -162,21 +299,21 @@ export class RenderingContext2D
     return this._miterLimit;
   }
   set miterLimit(value: number) {
-    ffi.symbols.nvgStrokeWidth(this.nativeCtx, value);
+    ffi.symbols.nvgMiterLimit(this.nativeCtx, value);
   }
 
   get shadowBlur() {
     return this._shadowBlur;
   }
   set shadowBlur(value: number) {
-    ffi.symbols.nvgStrokeWidth(this.nativeCtx, value);
+    throw new Error("Not implemented.");
   }
 
   get shadowColor() {
     return this._shadowColor;
   }
   set shadowColor(value: string) {
-    ffi.symbols.nvgStrokeWidth(this.nativeCtx, value);
+    throw new Error("Not implemented.");
   }
 
   get shadowOffsetX() {
@@ -203,7 +340,7 @@ export class RenderingContext2D
 
     ffi.symbols.nvgStrokeColor(
       this.nativeCtx,
-      ffi.symbols.StyleToNVGColor(stringToBuffer(this._strokeStyle))
+      ffi.symbols.StyleToNVGColor(stringToBuffer(this._strokeStyle)),
     );
   }
 
@@ -211,28 +348,28 @@ export class RenderingContext2D
     return this._textAlign;
   }
   set textAlign(value: CanvasTextAlign) {
-    ffi.symbols.nvgStrokeWidth(this.nativeCtx, value);
+    ffi.symbols.nvgTextAlign(this.nativeCtx, this.getNvgAlign(value));
   }
 
   get textBaseline() {
     return this._textBaseline;
   }
   set textBaseline(value: CanvasTextBaseline) {
-    ffi.symbols.nvgStrokeWidth(this.nativeCtx, value);
+    ffi.symbols.nvgStrokeWidth(this.nativeCtx, this.getNvgBaseline(value));
   }
 
   get textRendering() {
     return this._textRendering;
   }
   set textRendering(value: CanvasTextRendering) {
-    ffi.symbols.nvgStrokeWidth(this.nativeCtx, value);
+    throw new Error("Not implemented.");
   }
 
   get wordSpacing() {
     return this._wordSpacing;
   }
   set wordSpacing(value: string) {
-    ffi.symbols.nvgStrokeWidth(this.nativeCtx, value);
+    throw new Error("Not implemented.");
   }
 
   getContextAttributes(): CanvasRenderingContext2DSettings {
@@ -247,9 +384,22 @@ export class RenderingContext2D
     dx?: unknown,
     dy?: unknown,
     dw?: unknown,
-    dh?: unknown
+    dh?: unknown,
   ): void {
-    throw new Error("Method not implemented.");
+    ffi.symbols.nvgCreateImageRGBA();
+  }
+  drawImage(
+    image: unknown,
+    sx: unknown,
+    sy: unknown,
+    sw?: unknown,
+    sh?: unknown,
+    dx?: unknown,
+    dy?: unknown,
+    dw?: unknown,
+    dh?: unknown,
+  ): void {
+    ffi.symbols.nvgCreateImageRGBA();
   }
   beginPath(): void {
     ffi.symbols.nvgBeginPath(this.nativeCtx);
@@ -264,7 +414,7 @@ export class RenderingContext2D
     path: unknown,
     x: unknown,
     y?: unknown,
-    fillRule?: unknown
+    fillRule?: unknown,
   ): boolean {
     throw new Error("Method not implemented.");
   }
@@ -278,7 +428,7 @@ export class RenderingContext2D
   createConicGradient(
     startAngle: number,
     x: number,
-    y: number
+    y: number,
   ): CanvasGradient {
     throw new Error("Method not implemented.");
   }
@@ -286,13 +436,13 @@ export class RenderingContext2D
     x0: number,
     y0: number,
     x1: number,
-    y1: number
+    y1: number,
   ): CanvasGradient {
     throw new Error("Method not implemented.");
   }
   createPattern(
     image: CanvasImageSource,
-    repetition: string | null
+    repetition: string | null,
   ): CanvasPattern | null {
     throw new Error("Method not implemented.");
   }
@@ -302,7 +452,7 @@ export class RenderingContext2D
     r0: number,
     x1: number,
     y1: number,
-    r1: number
+    r1: number,
   ): CanvasGradient {
     throw new Error("Method not implemented.");
   }
@@ -315,7 +465,7 @@ export class RenderingContext2D
     sy: number,
     sw: number,
     sh: number,
-    settings?: ImageDataSettings
+    settings?: ImageDataSettings,
   ): ImageData {
     throw new Error("Method not implemented.");
   }
@@ -326,7 +476,7 @@ export class RenderingContext2D
     dirtyX?: unknown,
     dirtyY?: unknown,
     dirtyWidth?: unknown,
-    dirtyHeight?: unknown
+    dirtyHeight?: unknown,
   ): void {
     throw new Error("Method not implemented.");
   }
@@ -337,7 +487,7 @@ export class RenderingContext2D
     radius: number,
     startAngle: number,
     endAngle: number,
-    counterclockwise = false
+    counterclockwise = false,
   ): void {
     ffi.symbols.nvgArc(
       this.nativeCtx,
@@ -346,11 +496,11 @@ export class RenderingContext2D
       radius,
       startAngle,
       endAngle,
-      counterclockwise ? NVGwinding.NVG_CCW : NVGwinding.NVG_CW
+      counterclockwise ? NVGwinding.NVG_CCW : NVGwinding.NVG_CW,
     );
   }
   arcTo(x1: number, y1: number, x2: number, y2: number, radius: number): void {
-    throw new Error("Method not implemented.");
+    ffi.symbols.nvgArcTo(this.nativeCtx, x1, y1, x2, y2, radius);
   }
   bezierCurveTo(
     cp1x: number,
@@ -358,9 +508,9 @@ export class RenderingContext2D
     cp2x: number,
     cp2y: number,
     x: number,
-    y: number
+    y: number,
   ): void {
-    throw new Error("Method not implemented.");
+    ffi.symbols.nvgBezierTo(this.nativeCtx, cp1x, cp1y, cp2x, cp2y, x, y);
   }
   closePath(): void {
     ffi.symbols.nvgClosePath(this.nativeCtx);
@@ -373,7 +523,7 @@ export class RenderingContext2D
     rotation: number,
     startAngle: number,
     endAngle: number,
-    counterclockwise?: boolean
+    counterclockwise?: boolean,
   ): void {
     throw new Error("Method not implemented.");
   }
@@ -384,19 +534,19 @@ export class RenderingContext2D
     ffi.symbols.nvgMoveTo(this.nativeCtx, x, y);
   }
   quadraticCurveTo(cpx: number, cpy: number, x: number, y: number): void {
-    throw new Error("Method not implemented.");
+    ffi.symbols.nvgQuadTo(this.nativeCtx, cpx, cpy, x, y);
   }
   rect(x: number, y: number, w: number, h: number): void {
-    throw new Error("Method not implemented.");
+    ffi.symbols.nvgRect(this.nativeCtx, x, y, w, h);
   }
   roundRect(
     x: number,
     y: number,
     w: number,
     h: number,
-    radii?: number | DOMPointInit | (number | DOMPointInit)[]
+    radii?: number | DOMPointInit | (number | DOMPointInit)[],
   ): void {
-    throw new Error("Method not implemented.");
+    ffi.symbols.nvgRoundedRect(this.nativeCtx, x, y, w, h, radii as number);
   }
 
   getLineDash(): number[] {
@@ -413,7 +563,7 @@ export class RenderingContext2D
     ffi.symbols.nvgRect(this.nativeCtx, x, y, w, h);
     ffi.symbols.nvgFillColor(
       this.nativeCtx,
-      ffi.symbols.StyleToNVGColor(stringToBuffer(this.fillStyle as string))
+      ffi.symbols.StyleToNVGColor(stringToBuffer(this.fillStyle as string)),
     );
     ffi.symbols.nvgFill(this.nativeCtx);
   }
@@ -422,7 +572,7 @@ export class RenderingContext2D
     ffi.symbols.nvgRect(this.nativeCtx, x, y, w, h);
     ffi.symbols.nvgStrokeColor(
       this.nativeCtx,
-      ffi.symbols.StyleToNVGColor(stringToBuffer(this.strokeStyle as string))
+      ffi.symbols.StyleToNVGColor(stringToBuffer(this.strokeStyle as string)),
     );
     ffi.symbols.nvgStroke(this.nativeCtx);
   }
@@ -434,29 +584,29 @@ export class RenderingContext2D
     throw new Error("Method not implemented.");
   }
   restore(): void {
-    throw new Error("Method not implemented.");
+    ffi.symbols.nvgRestore(this.nativeCtx);
   }
   save(): void {
-    throw new Error("Method not implemented.");
+    ffi.symbols.nvgSave(this.nativeCtx);
   }
   fillText(text: string, x: number, y: number, maxWidth?: number): void {
-    throw new Error("Method not implemented.");
+    ffi.symbols.nvgText(this.nativeCtx, x, y, stringToBuffer(text), null);
   }
   measureText(text: string): TextMetrics {
     throw new Error("Method not implemented.");
   }
   strokeText(text: string, x: number, y: number, maxWidth?: number): void {
-    throw new Error("Method not implemented.");
+    ffi.symbols.nvgText(this.nativeCtx, x, y, stringToBuffer(text), null);
   }
 
   resetTransform(): void {
     throw new Error("Method not implemented.");
   }
   rotate(angle: number): void {
-    throw new Error("Method not implemented.");
+    ffi.symbols.nvgRotate(this.nativeCtx, angle);
   }
   scale(x: number, y: number): void {
-    throw new Error("Method not implemented.");
+    ffi.symbols.nvgScale(this.nativeCtx, x, y);
   }
   setTransform(
     a?: unknown,
@@ -464,7 +614,7 @@ export class RenderingContext2D
     c?: unknown,
     d?: unknown,
     e?: unknown,
-    f?: unknown
+    f?: unknown,
   ): void {
     ffi.symbols.nvgTransform(
       this.nativeCtx,
@@ -473,7 +623,7 @@ export class RenderingContext2D
       c as number,
       d as number,
       e as number,
-      f as number
+      f as number,
     );
   }
   transform(
@@ -482,12 +632,12 @@ export class RenderingContext2D
     c: number,
     d: number,
     e: number,
-    f: number
+    f: number,
   ): void {
     throw new Error("Method not implemented.");
   }
   translate(x: number, y: number): void {
-    throw new Error("Method not implemented.");
+    ffi.symbols.nvgTranslate(this.nativeCtx, x, y);
   }
   drawFocusIfNeeded(path: unknown, element?: unknown): void {
     throw new Error("Method not implemented.");

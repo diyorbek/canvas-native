@@ -12,10 +12,9 @@
  */
 function clearCanvas(ctx, W, H) {
   // Reset any transformations (like translate, rotate)
-  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  // ctx.setTransform(1, 0, 0, 1, 0, 0);
   // Clear the entire canvas
   ctx.clearRect(0, 0, W, H);
-
   // Draw a simple border to show the canvas boundary
   // ctx.strokeStyle = "#cbd";
   // ctx.lineWidth = 1;
@@ -81,7 +80,7 @@ export function drawArcs(ctx, W, H) {
   // Full circle
   ctx.beginPath();
   // arc(x, y, radius, startAngle, endAngle, counterClockwise)
-  ctx.arc(200, 300, 70, 0, Math.PI * 2);
+  ctx.arc(300, 300, 70, 0, Math.PI * 2);
   ctx.fillStyle = "#ff0";
   ctx.fill();
 
@@ -118,7 +117,7 @@ export function drawCurves(ctx, W, H) {
   ctx.moveTo(50, 200);
   // quadraticCurveTo(cp1x, cp1y, x, y)
   ctx.quadraticCurveTo(150, 50, 250, 200);
-  ctx.strokeStyle = "red";
+  ctx.strokeStyle = "#f00";
   ctx.lineWidth = 4;
   ctx.stroke();
 
@@ -127,7 +126,7 @@ export function drawCurves(ctx, W, H) {
   ctx.moveTo(350, 200);
   // bezierCurveTo(cp1x, cp1y, cp2x, cp2y, x, y)
   ctx.bezierCurveTo(400, 50, 500, 350, 550, 200);
-  ctx.strokeStyle = "blue";
+  ctx.strokeStyle = "#00f";
   ctx.lineWidth = 4;
   ctx.stroke();
 }
@@ -142,14 +141,14 @@ export function drawCurves(ctx, W, H) {
 export function drawText(ctx, W, H) {
   clearCanvas(ctx, W, H);
   ctx.font = "48px Arial";
-  ctx.fillStyle = "navy";
+  ctx.fillStyle = "#0ff";
   ctx.fillText("Hello Canvas!", 50, 100);
 
-  ctx.font = '30px "Times New Roman"';
-  ctx.strokeStyle = "orange";
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.strokeText("Centered & Stroked", W / 2, H / 2);
+  // ctx.font = '30px "Times New Roman"';
+  // ctx.strokeStyle = "#aaf";
+  // ctx.textAlign = "center";
+  // ctx.textBaseline = "middle";
+  // ctx.strokeText("Centered & Stroked", W / 2, H / 2);
 }
 
 // Test 6: lineWidth, lineCap, lineJoin
@@ -166,41 +165,41 @@ export function drawStyles(ctx, W, H) {
   // lineCap
   ctx.beginPath();
   ctx.lineCap = "butt"; // Default
-  ctx.moveTo(100, 100);
-  ctx.lineTo(300, 100);
-  ctx.strokeStyle = "red";
+  ctx.moveTo(500, 50);
+  ctx.lineTo(700, 50);
+  ctx.strokeStyle = "#f00";
   ctx.stroke();
 
   ctx.beginPath();
   ctx.lineCap = "round";
-  ctx.moveTo(100, 150);
-  ctx.lineTo(300, 150);
-  ctx.strokeStyle = "green";
+  ctx.moveTo(500, 100);
+  ctx.lineTo(700, 100);
+  ctx.strokeStyle = "#0f0";
   ctx.stroke();
 
   ctx.beginPath();
   ctx.lineCap = "square";
-  ctx.moveTo(100, 200);
-  ctx.lineTo(300, 200);
-  ctx.strokeStyle = "blue";
+  ctx.moveTo(500, 150);
+  ctx.lineTo(700, 150);
+  ctx.strokeStyle = "#00f";
   ctx.stroke();
 
   // lineJoin
   ctx.lineWidth = 15;
   ctx.beginPath();
   ctx.lineJoin = "miter"; // Default
-  ctx.moveTo(100, 350);
-  ctx.lineTo(150, 300);
-  ctx.lineTo(200, 350);
-  ctx.strokeStyle = "cyan";
+  ctx.moveTo(500, 300);
+  ctx.lineTo(550, 250);
+  ctx.lineTo(600, 300);
+  ctx.strokeStyle = "#0ef";
   ctx.stroke();
 
   ctx.beginPath();
   ctx.lineJoin = "round";
-  ctx.moveTo(250, 350);
-  ctx.lineTo(300, 300);
-  ctx.lineTo(350, 350);
-  ctx.strokeStyle = "magenta";
+  ctx.moveTo(550, 300);
+  ctx.lineTo(600, 250);
+  ctx.lineTo(650, 300);
+  ctx.strokeStyle = "#f00";
   ctx.stroke();
 }
 
@@ -223,19 +222,19 @@ export function drawTransforms(ctx, W, H) {
   ctx.rotate((Math.PI / 180) * 20); // 20 degrees
 
   // Draw rect centered on new, rotated origin
-  ctx.fillStyle = "gray";
+  ctx.fillStyle = "#aaa";
   ctx.fillRect(-50, -50, 100, 100);
 
   ctx.restore(); // Restore to the saved clean state
 
   // This rect is not rotated or translated
-  ctx.fillStyle = "rgba(0,0,0,0.2)";
+  ctx.fillStyle = "#000";
   ctx.fillRect(0, 0, 50, 50);
 
   // --- Scale ---
   ctx.save();
   ctx.scale(2, 0.5); // 2x width, 0.5x height
-  ctx.fillStyle = "purple";
+  ctx.fillStyle = "#aaf";
   // This rect will be drawn at (100, 400) but will
   // appear 200 wide and 50 tall.
   ctx.fillRect(50, 400, 100, 100);
@@ -249,30 +248,21 @@ export function drawTransforms(ctx, W, H) {
  * @param {number} W
  * @param {number} H
  */
-export function drawImages(ctx, W, H) {
+export function drawImages(ctx, W, H, img) {
   clearCanvas(ctx, W, H);
-  const img = new Image();
-  // Use a placeholder image
-  img.src = "https://placehold.co/200x150/f06/fff?text=Canvas+Image";
 
-  img.onload = () => {
-    // Simple draw
-    ctx.drawImage(img, 50, 50);
+  // Simple draw
+  // ctx.drawImage(img, 0, 0);
+  // ctx.drawImage(img, 50, 50, 200, 400);
 
-    // Scaled draw
-    ctx.drawImage(img, 300, 50, 100, 75); // 100x75
+  // Scaled draw
+  ctx.drawImage(img, 300, 50, 100, 75); // 100x75
 
-    // Sliced and scaled draw
-    // drawImage(image, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight)
-    // Draw the top-left 100x75 part of the image
-    // at 150, 300, but scaled to 200x150
-    ctx.drawImage(img, 0, 0, 100, 75, 150, 300, 200, 150);
-  };
-  img.onerror = () => {
-    ctx.font = "20px Arial";
-    ctx.fillStyle = "red";
-    ctx.fillText("Error loading image.", 50, 100);
-  };
+  // Sliced and scaled draw
+  // drawImage(image, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight)
+  // Draw the top-left 100x75 part of the image
+  // at 150, 300, but scaled to 200x150
+  // ctx.drawImage(img, 0, 0, 100, 75, 150, 300, 200, 150);
 }
 
 // Test 9: globalAlpha, globalCompositeOperation
@@ -297,9 +287,9 @@ export function drawAlpha(ctx, W, H) {
 
   // globalCompositeOperation
   // 'destination-over' draws new shapes *behind* existing ones
-  ctx.globalCompositeOperation = "destination-over";
-  ctx.fillStyle = "green";
-  ctx.fillRect(120, 120, 100, 100);
+  // ctx.globalCompositeOperation = "destination-over";
+  // ctx.fillStyle = "#0f0";
+  // ctx.fillRect(120, 120, 100, 100);
 
   // Reset composite operation to default
   ctx.globalCompositeOperation = "source-over";
@@ -318,16 +308,16 @@ export function drawHouseDemo(ctx, W, H) {
   ctx.strokeStyle = "#000";
 
   // Wall
-  ctx.strokeRect(75, 140, 150, 110);
+  ctx.strokeRect(475, 240, 150, 110);
 
   // Door
-  ctx.fillRect(130, 190, 40, 60);
+  ctx.fillRect(530, 290, 40, 60);
 
   // // Roof
   ctx.beginPath();
-  ctx.moveTo(50, 140);
-  ctx.lineTo(150, 60);
-  ctx.lineTo(250, 140);
+  ctx.moveTo(450, 240);
+  ctx.lineTo(550, 160);
+  ctx.lineTo(650, 240);
   ctx.closePath();
   ctx.stroke();
 }

@@ -1,6 +1,7 @@
 /// <reference lib="dom" />
 
 import { ffi } from "./ffi.ts";
+import { Image } from "./image.ts";
 import { stringToBuffer } from "./utils.ts";
 
 enum NVGwinding {
@@ -153,7 +154,7 @@ class NativeRenderingContext2D {
 
 export class RenderingContext2D
   extends NativeRenderingContext2D
-  implements SlimCanvasRenderingContext2D
+  implements Omit<SlimCanvasRenderingContext2D, "drawImage">
 {
   private _direction: CanvasDirection = "ltr";
   private _fillStyle: string | CanvasGradient | CanvasPattern = "#000";
@@ -375,31 +376,52 @@ export class RenderingContext2D
   getContextAttributes(): CanvasRenderingContext2DSettings {
     throw new Error("Method not implemented.");
   }
+
+  drawImage(image: Image, dx: number, dy: number): void;
+  drawImage(image: Image, dx: number, dy: number, dw: number, dh: number): void;
   drawImage(
-    image: unknown,
-    sx: unknown,
-    sy: unknown,
-    sw?: unknown,
-    sh?: unknown,
-    dx?: unknown,
-    dy?: unknown,
-    dw?: unknown,
-    dh?: unknown,
+    image: Image,
+    dx: number,
+    dy: number,
+    dw?: number,
+    dh?: number,
   ): void {
-    ffi.symbols.nvgCreateImageRGBA();
-  }
-  drawImage(
-    image: unknown,
-    sx: unknown,
-    sy: unknown,
-    sw?: unknown,
-    sh?: unknown,
-    dx?: unknown,
-    dy?: unknown,
-    dw?: unknown,
-    dh?: unknown,
-  ): void {
-    ffi.symbols.nvgCreateImageRGBA();
+    const flags =
+      NVGimageFlags.NVG_IMAGE_GENERATE_MIPMAPS |
+      NVGimageFlags.NVG_IMAGE_NEAREST;
+
+    let imageHandle = -1;
+
+    if (image.isLocalFile && typeof image.src === "string") {
+      imageHandle = ffi.symbols.nvgGetImageHandleFromPath(
+        this.nativeCtx,
+        stringToBuffer(image.src),
+        flags,
+      );
+    } else if (image.data) {
+      imageHandle = ffi.symbols.nvgGetImageHandleFromMemory(
+        this.nativeCtx,
+        stringToBuffer(image.fileType as string),
+        image.data,
+        image.data.byteLength,
+        flags,
+      );
+    }
+
+    if (imageHandle < 0) {
+      throw new Error("Cannot create image handle!");
+    }
+
+    if (typeof dw === "undefined" || typeof dh === "undefined") {
+      ffi.symbols.nvgDrawImageWithDeafultSize(
+        this.nativeCtx,
+        imageHandle,
+        dx,
+        dy,
+      );
+    } else {
+      ffi.symbols.nvgDrawImage(this.nativeCtx, imageHandle, dx, dy, dw, dh);
+    }
   }
   beginPath(): void {
     ffi.symbols.nvgBeginPath(this.nativeCtx);

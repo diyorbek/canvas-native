@@ -139,6 +139,26 @@ void RenderNvgLayer(RenderTexture2D& texture, NVGcontext* ctx, int width,
              viewportBefore[3]);
 }
 
+int LoadImageFromPath(NVGcontext* vg, const char* filePath, int imageFlags) {
+  Image image = LoadImage(filePath);
+  int imageHandle = nvgCreateImageRGBA(vg, image.width, image.height,
+                                       imageFlags, (unsigned char*)image.data);
+  UnloadImage(image);
+
+  return imageHandle;
+}
+
+int LoadImageFromBuffer(NVGcontext* vg, const char* fileType,
+                        const unsigned char* fileData, int dataSize,
+                        int imageFlags) {
+  Image image = LoadImageFromMemory(fileType, fileData, dataSize);
+  int imageHandle = nvgCreateImageRGBA(vg, image.width, image.height,
+                                       imageFlags, (unsigned char*)image.data);
+  UnloadImage(image);
+
+  return imageHandle;
+}
+
 extern "C" {
 
 Color StyleToColor(char* text) {
@@ -231,5 +251,34 @@ void nvgClearRect(NVGcontext* vg, float x, float y, float w, float h) {
   nvgBeginPath(vg);
   nvgRect(vg, 0, 0, 0, 0);
   nvgFill(vg);
+}
+
+void nvgDrawImage(NVGcontext* vg, int imageHandle, int x, int y, int width,
+                  int height) {
+  auto imgPaint =
+      nvgImagePattern(vg, x, y, width, height, 0, imageHandle, 1.0f);
+
+  nvgBeginPath(vg);
+  nvgRect(vg, x, y, width, height);
+  nvgFillPaint(vg, imgPaint);
+  nvgFill(vg);
+}
+
+void nvgDrawImageWithDeafultSize(NVGcontext* vg, int imageHandle, int x,
+                                 int y) {
+  int width, height;
+  nvgImageSize(vg, imageHandle, &width, &height);
+  nvgDrawImage(vg, imageHandle, x, y, width, height);
+}
+
+int nvgGetImageHandleFromPath(NVGcontext* vg, const char* filePath,
+                              int imageFlags) {
+  return LoadImageFromPath(vg, filePath, imageFlags);
+}
+
+int nvgGetImageHandleFromMemory(NVGcontext* vg, const char* fileType,
+                                const unsigned char* fileData, int dataSize,
+                                int imageFlags) {
+  return LoadImageFromBuffer(vg, fileType, fileData, dataSize, imageFlags);
 }
 }

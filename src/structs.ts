@@ -24,7 +24,6 @@ export const STRUCT_NVGcolor: Deno.NativeStructType = {
 // 	NVGcolor outerColor;
 // 	int image;
 // };
-
 export const STRUCT_NVGpaint = {
   struct: [
     ...["f32", "f32", "f32", "f32", "f32", "f32"], // xform[6]
@@ -35,4 +34,16 @@ export const STRUCT_NVGpaint = {
     STRUCT_NVGcolor, // outerColor
     "i32", // image
   ],
+};
+
+// RAYLIB Image, pixel data stored in CPU memory (RAM)
+// typedef struct Image {
+//     void *data;             // Image raw data
+//     int width;              // Image base width
+//     int height;             // Image base height
+//     int mipmaps;            // Mipmap levels, 1 by default
+//     int format;             // Data format (PixelFormat type)
+// } Image;
+export const STRUCT_Image: Deno.NativeStructType = {
+  struct: ["pointer", "i32", "i32", "i32", "i32"],
 };

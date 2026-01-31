@@ -215,22 +215,33 @@ void CreateWindow(int width, int height, const char* title,
 
 int main(void) {
   auto callback = [](NVGcontext* ctx) {
-    // Draw blue rectangle
-    // nvgBeginPath(ctx);
-    // nvgRect(ctx, 100, 200, 400, 200);
-    // nvgFillColor(ctx, nvgRGBA(50, 100, 155, 255));
-    // nvgFill(ctx);
+    // nvgFontSize(ctx, 48);                    // ctx.font = "48px Arial";
+    nvgFillColor(ctx, nvgRGB(0, 200, 255));  // ctx.fillStyle = "#0af";
+    // ctx.fillText("Hello Canvas!", 50, 100);
+    nvgText(ctx, 50, 100, "Hello Canvas!", NULL);
 
+    // nvgFontSize(ctx, 30);  // ctx.font = '30px "Times New Roman"';
+    // nvgStrokeColor(ctx, nvgRGB(200, 200, 255));  // ctx.strokeStyle = "#aaf";
+    // nvgTextAlign(ctx, NVG_ALIGN_CENTER);         // ctx.textAlign = "center";
+    // nvgTextAlign(ctx, NVG_ALIGN_MIDDLE);         // ctx.textBaseline =
+    // "middle";
+    // // ctx.strokeText("Centered & Stroked", 300, 200);
+    // nvgText(ctx, 300, 200, "Centered & Stroked", NULL);
+    // const char* path = "../img.png";
+    Image image = LoadImage("../img1.png");
+    int vgImage = nvgCreateImageRGBA(ctx, image.width, image.height, 1,
+                                     (unsigned char*)image.data);
+
+    NVGpaint imgPaint =
+        nvgImagePattern(ctx, 100, 100, 400, 200, 0, vgImage, 1.0f);
+    UnloadImage(image);
+    int w, h;
+    nvgImageSize(ctx, vgImage, &w, &h);
+    printf("Hello Wordl!!!!! w=%d h=%d\n", w, h);
     nvgBeginPath(ctx);
-    nvgMoveTo(ctx, 200, 300);  // Start at center
-    nvgArc(ctx, 200, 300, 70, 0.25 * M_PI, 1.75 * M_PI, NVG_CW);
-    nvgLineTo(ctx, 200, 300);  // Line back to center (optional but clearer)
-    nvgClosePath(ctx);         // Close the path
-
-    nvgFillColor(ctx, nvgRGBA(200, 200, 0, 255));
+    nvgRect(ctx, 100, 100, 400, 200);
+    nvgFillPaint(ctx, imgPaint);
     nvgFill(ctx);
-    nvgStrokeColor(ctx, nvgRGBA(0, 0, 0, 255));
-    // nvgStroke(ctx);
   };
 
   CreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Raylib + NanoVG Example",

@@ -8,8 +8,8 @@ export class Image {
   #data: Uint8Array | null = null;
   #fileType: string | null = null;
   #src: ImageSource;
-  #width: number;
-  #height: number;
+  #width: number | null = null;
+  #height: number | null = null;
 
   constructor(data: string);
   constructor(data: Uint8Array, imageType: string);
@@ -17,27 +17,17 @@ export class Image {
     this.#src = source;
 
     if (typeof source === "string" && isFileUrl(source)) {
-      const image = loadImage(source);
-
       this.#isLocalFile = true;
-      this.#width = image.width;
-      this.#height = image.height;
     } else if (typeof source === "string") {
       const { buffer, mimeType } = imageBufferFromDataUrl(source);
       const fileType = mimeType.split("/")[1];
-      const image = loadImageFromMemory(fileType, buffer);
-
       this.#data = buffer;
       this.#fileType = fileType;
-      this.#width = image.width;
-      this.#height = image.height;
     } else if (source instanceof Uint8Array && imageType) {
-      const image = loadImageFromMemory(imageType, source);
-
-      this.#width = image.width;
-      this.#height = image.height;
+      this.#data = source;
+      this.#fileType = imageType;
     } else {
-      throw new Error("No image type!");
+      throw new Error("Cannot load the image!");
     }
   }
 
@@ -58,11 +48,36 @@ export class Image {
   }
 
   get width(): number {
-    return this.#width;
+    this.#loadImageDimentions();
+    return this.#width as number;
   }
 
   get height(): number {
-    return this.#height;
+    this.#loadImageDimentions();
+    return this.#height as number;
+  }
+
+  #loadImageDimentions() {
+    if (
+      typeof this.#width !== "undefined" &&
+      typeof this.#height !== "undefined"
+    ) {
+      return;
+    }
+
+    if (typeof this.#src === "string" && this.#isLocalFile) {
+      const image = loadImage(this.#src);
+
+      this.#width = image.width;
+      this.#height = image.height;
+    } else if (this.#data instanceof Uint8Array && this.#fileType) {
+      const image = loadImageFromMemory(this.#fileType, this.#data);
+
+      this.#width = image.width;
+      this.#height = image.height;
+    } else {
+      throw new Error("Cannot get dimensions for the image!");
+    }
   }
 
   [Symbol.for("Deno.customInspect")](): string {

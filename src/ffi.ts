@@ -1,5 +1,5 @@
 import { NANOVG_SYMBOLS } from "./nanovgSymbols.ts";
-import { STRUCT_Color, STRUCT_Image, STRUCT_NVGcolor } from "./structs.ts";
+import { STRUCT_Image, STRUCT_NVGcolor } from "./structs.ts";
 
 export const ffi = Deno.dlopen("./build/libcanvasnative.dylib", {
   ...NANOVG_SYMBOLS,
@@ -10,12 +10,7 @@ export const ffi = Deno.dlopen("./build/libcanvasnative.dylib", {
     result: "void",
   },
 
-  StyleToColor: {
-    parameters: ["buffer"],
-    result: STRUCT_Color,
-  },
-
-  StyleToNVGColor: {
+  HexToNVGColor: {
     parameters: ["buffer"],
     result: STRUCT_NVGcolor,
   },

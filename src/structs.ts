@@ -1,13 +1,3 @@
-// struct Color {
-//     unsigned char r;        // Color red value
-//     unsigned char g;        // Color green value
-//     unsigned char b;        // Color blue value
-//     unsigned char a;        // Color alpha value
-// };
-export const STRUCT_Color: Deno.NativeStructType = {
-  struct: ["u8", "u8", "u8", "u8"],
-};
-
 // struct NVGcolor {
 //   float r,g,b,a;
 // };

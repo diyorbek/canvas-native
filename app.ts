@@ -14,8 +14,8 @@ createWindow(width, height, "Canvas Native Demo", (ctx: RenderingContext2D) => {
   demos.drawCurves(ctx, width, height);
   demos.drawStyles(ctx, width, height);
   demos.drawImages(ctx, width, height, new Image("./img.png"));
+  demos.drawText(ctx, width, height);
 
   // demos.drawAlpha(ctx, width, height);
   // demos.drawTransforms(ctx, width, height);
-  // demos.drawText(ctx, width, height);
 });

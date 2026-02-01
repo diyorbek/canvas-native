@@ -1,8 +1,9 @@
 /// <reference lib="dom" />
 
+import { DEFAULT_FONT_PATH } from "./constants.ts";
 import { ffi } from "./ffi.ts";
 import { Image } from "./image.ts";
-import { stringToBuffer } from "./utils.ts";
+import { parseColorString, stringToBuffer } from "./utils.ts";
 
 enum NVGwinding {
   NVG_CCW = 1, // Winding for solid shapes
@@ -58,7 +59,13 @@ type SlimCanvasRenderingContext2D = Omit<
 >;
 
 class NativeRenderingContext2D {
-  constructor(protected nativeCtx: Deno.PointerValue) {}
+  constructor(protected nativeCtx: Deno.PointerValue) {
+    ffi.symbols.nvgCreateFont(
+      nativeCtx,
+      stringToBuffer("sans"),
+      stringToBuffer(DEFAULT_FONT_PATH),
+    );
+  }
 
   protected getNvgAlign(align: CanvasTextAlign) {
     switch (align) {
@@ -193,20 +200,25 @@ export class RenderingContext2D
     return this._fillStyle;
   }
   set fillStyle(value: string | CanvasGradient | CanvasPattern) {
-    if (typeof value !== "string") return;
+    if (typeof value !== "string") {
+      throw new Error("Only string based styles are supported!");
+    }
 
     this._fillStyle = value;
-    ffi.symbols.nvgFillColor(
-      this.nativeCtx,
-      ffi.symbols.StyleToNVGColor(stringToBuffer(this._fillStyle)),
-    );
+
+    const color =
+      value.trim().at(0) === "#"
+        ? ffi.symbols.HexToNVGColor(stringToBuffer(this._fillStyle))
+        : ffi.symbols.nvgRGBA(...parseColorString(this._fillStyle));
+
+    ffi.symbols.nvgFillColor(this.nativeCtx, color);
   }
 
   get font() {
     return this._font;
   }
   set font(value: string) {
-    ffi.symbols.nvgFontSize(this.nativeCtx, 40);
+    ffi.symbols.nvgFontSize(this.nativeCtx, 48);
   }
 
   get fontKerning() {
@@ -341,7 +353,7 @@ export class RenderingContext2D
 
     ffi.symbols.nvgStrokeColor(
       this.nativeCtx,
-      ffi.symbols.StyleToNVGColor(stringToBuffer(this._strokeStyle)),
+      ffi.symbols.HexToNVGColor(stringToBuffer(this._strokeStyle)),
     );
   }
 
@@ -585,7 +597,7 @@ export class RenderingContext2D
     ffi.symbols.nvgRect(this.nativeCtx, x, y, w, h);
     ffi.symbols.nvgFillColor(
       this.nativeCtx,
-      ffi.symbols.StyleToNVGColor(stringToBuffer(this.fillStyle as string)),
+      ffi.symbols.HexToNVGColor(stringToBuffer(this.fillStyle as string)),
     );
     ffi.symbols.nvgFill(this.nativeCtx);
   }
@@ -594,7 +606,7 @@ export class RenderingContext2D
     ffi.symbols.nvgRect(this.nativeCtx, x, y, w, h);
     ffi.symbols.nvgStrokeColor(
       this.nativeCtx,
-      ffi.symbols.StyleToNVGColor(stringToBuffer(this.strokeStyle as string)),
+      ffi.symbols.HexToNVGColor(stringToBuffer(this.strokeStyle as string)),
     );
     ffi.symbols.nvgStroke(this.nativeCtx);
   }
@@ -613,6 +625,7 @@ export class RenderingContext2D
   }
   fillText(text: string, x: number, y: number, maxWidth?: number): void {
     ffi.symbols.nvgText(this.nativeCtx, x, y, stringToBuffer(text), null);
+    // ffi.symbols.texter(this.nativeCtx);
   }
   measureText(text: string): TextMetrics {
     throw new Error("Method not implemented.");

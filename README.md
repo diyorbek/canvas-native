@@ -101,7 +101,7 @@ Contributions are welcome! Areas for enhancement:
 ## Roadmap
 
 - [ ] Complete Canvas 2D API coverage
-- [ ] Improve color string parsing
+- [x] Improve color string parsing
 - [ ] Input handling (keyboard, mouse events)
 - [ ] Animation frame scheduling (`requestAnimationFrame`)
 - [ ] Cross-platform testing and optimization

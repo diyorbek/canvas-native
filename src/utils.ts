@@ -1,7 +1,28 @@
 import { decodeBase64 } from "jsr:@std/encoding/base64";
+import { NAMED_COLORS_MAP } from "./constants.ts";
+import { RGBAColor } from "./types.ts";
 
 export function stringToBuffer(text: string): BufferSource {
   return new TextEncoder().encode(text).buffer as BufferSource;
+}
+
+export function parseColorString(str: string): RGBAColor {
+  str = str.trim().toLowerCase();
+
+  if (str.at(-1) === ")") {
+    const [r, g, b, a] = str
+      .replace(/rgba?\(/, "")
+      .split(",")
+      .map((part) => parseFloat(part));
+
+    return [r, g, b, Math.floor(a * 255) || 255];
+  }
+
+  if (str in NAMED_COLORS_MAP) {
+    return NAMED_COLORS_MAP[str];
+  }
+
+  return [0, 0, 0, 255];
 }
 
 export function imageBufferFromDataUrl(data: string) {

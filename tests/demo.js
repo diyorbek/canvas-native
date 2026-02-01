@@ -140,9 +140,14 @@ export function drawCurves(ctx, W, H) {
  */
 export function drawText(ctx, W, H) {
   clearCanvas(ctx, W, H);
+
   ctx.font = "48px Arial";
-  ctx.fillStyle = "#0ff";
+  ctx.fillStyle = "#64b4ddaa";
+  ctx.fillText("Hello Canvas!", 50, 50);
+  ctx.fillStyle = "rgb(92, 0, 91)";
   ctx.fillText("Hello Canvas!", 50, 100);
+  ctx.fillStyle = "rgba(88, 177, 63, 0.67)";
+  ctx.fillText("Hello Canvas!", 50, 150);
 
   // ctx.font = '30px "Times New Roman"';
   // ctx.strokeStyle = "#aaf";

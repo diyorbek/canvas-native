@@ -1,4 +1,8 @@
+#include <algorithm>
 #include <cctype>
+#include <cstdint>
+#include <stdexcept>
+#include <string>
 #include <vector>
 
 #include "raylib.h"
@@ -139,20 +143,20 @@ void RenderNvgLayer(RenderTexture2D& texture, NVGcontext* ctx, int width,
              viewportBefore[3]);
 }
 
-int LoadImageFromPath(NVGcontext* vg, const char* filePath, int imageFlags) {
+int LoadImageFromPath(NVGcontext* ctx, const char* filePath, int imageFlags) {
   Image image = LoadImage(filePath);
-  int imageHandle = nvgCreateImageRGBA(vg, image.width, image.height,
+  int imageHandle = nvgCreateImageRGBA(ctx, image.width, image.height,
                                        imageFlags, (unsigned char*)image.data);
   UnloadImage(image);
 
   return imageHandle;
 }
 
-int LoadImageFromBuffer(NVGcontext* vg, const char* fileType,
+int LoadImageFromBuffer(NVGcontext* ctx, const char* fileType,
                         const unsigned char* fileData, int dataSize,
                         int imageFlags) {
   Image image = LoadImageFromMemory(fileType, fileData, dataSize);
-  int imageHandle = nvgCreateImageRGBA(vg, image.width, image.height,
+  int imageHandle = nvgCreateImageRGBA(ctx, image.width, image.height,
                                        imageFlags, (unsigned char*)image.data);
   UnloadImage(image);
 
@@ -160,21 +164,48 @@ int LoadImageFromBuffer(NVGcontext* vg, const char* fileType,
 }
 
 extern "C" {
+NVGcolor HexToNVGColor(const char* hexColor) {
+  std::string hex = hexColor;
 
-Color StyleToColor(char* text) {
-  unsigned char red = hexCharToValue(text[1]);
-  unsigned char green = hexCharToValue(text[2]);
-  unsigned char blue = hexCharToValue(text[3]);
+  if (!hex.empty() && hex[0] == '#') {
+    hex = hex.substr(1);
+  }
 
-  return Color{red, green, blue, 0xFF};
-}
+  std::transform(hex.begin(), hex.end(), hex.begin(), ::tolower);
 
-NVGcolor StyleToNVGColor(char* text) {
-  unsigned char red = hexCharToValue(text[1]);
-  unsigned char green = hexCharToValue(text[2]);
-  unsigned char blue = hexCharToValue(text[3]);
+  // Validate length
+  if (hex.length() != 3 && hex.length() != 4 && hex.length() != 6 &&
+      hex.length() != 8) {
+    throw std::invalid_argument("Invalid hex color format");
+  }
 
-  return NVGcolor{(float)red, (float)green, (float)blue, 0xFF};
+  // Validate hex characters
+  for (char c : hex) {
+    if (!((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f'))) {
+      throw std::invalid_argument("Invalid hex characters");
+    }
+  }
+
+  // Expand short format to long format
+  if (hex.length() == 3 || hex.length() == 4) {
+    std::string expanded;
+    for (char c : hex) {
+      expanded += c;
+      expanded += c;
+    }
+    hex = expanded;
+  }
+
+  uint8_t r = static_cast<uint8_t>(std::stoi(hex.substr(0, 2), nullptr, 16));
+  uint8_t g = static_cast<uint8_t>(std::stoi(hex.substr(2, 2), nullptr, 16));
+  uint8_t b = static_cast<uint8_t>(std::stoi(hex.substr(4, 2), nullptr, 16));
+  uint8_t a = 255.0F;
+
+  if (hex.length() == 8) {
+    a = static_cast<uint8_t>(std::stoi(hex.substr(6, 2), nullptr, 16));
+  }
+
+  return nvgRGBA(r, g, b, a);
 }
 
 void CreateWindow(int width, int height, const char* title,
@@ -233,52 +264,52 @@ void CreateWindow(int width, int height, const char* title,
 }
 
 /** Attempt to imitate HTML5 Canvas's clearRect() as NanoVG doesn't have it. */
-void nvgClearRect(NVGcontext* vg, float x, float y, float w, float h) {
-  nvgSave(vg);
+void nvgClearRect(NVGcontext* ctx, float x, float y, float w, float h) {
+  nvgSave(ctx);
 
   // NVG_COPY makes new pixels replace exisitng ones
-  nvgGlobalCompositeOperation(vg, NVG_COPY);
+  nvgGlobalCompositeOperation(ctx, NVG_COPY);
   // draw blank rect to erase existing pixels
-  nvgBeginPath(vg);
-  nvgRect(vg, x, y, w, h);
-  nvgFillColor(vg, nvgRGBA(0, 0, 0, 0));
-  nvgFill(vg);
+  nvgBeginPath(ctx);
+  nvgRect(ctx, x, y, w, h);
+  nvgFillColor(ctx, nvgRGBA(0, 0, 0, 0));
+  nvgFill(ctx);
 
-  nvgRestore(vg);
+  nvgRestore(ctx);
 
   // dummy rect to fix case where nvgClearRect() is called as last intsruction
   // which corrupts blending
-  nvgBeginPath(vg);
-  nvgRect(vg, 0, 0, 0, 0);
-  nvgFill(vg);
+  nvgBeginPath(ctx);
+  nvgRect(ctx, 0, 0, 0, 0);
+  nvgFill(ctx);
 }
 
-void nvgDrawImage(NVGcontext* vg, int imageHandle, int x, int y, int width,
+void nvgDrawImage(NVGcontext* ctx, int imageHandle, int x, int y, int width,
                   int height) {
   auto imgPaint =
-      nvgImagePattern(vg, x, y, width, height, 0, imageHandle, 1.0f);
+      nvgImagePattern(ctx, x, y, width, height, 0, imageHandle, 1.0f);
 
-  nvgBeginPath(vg);
-  nvgRect(vg, x, y, width, height);
-  nvgFillPaint(vg, imgPaint);
-  nvgFill(vg);
+  nvgBeginPath(ctx);
+  nvgRect(ctx, x, y, width, height);
+  nvgFillPaint(ctx, imgPaint);
+  nvgFill(ctx);
 }
 
-void nvgDrawImageWithDeafultSize(NVGcontext* vg, int imageHandle, int x,
+void nvgDrawImageWithDeafultSize(NVGcontext* ctx, int imageHandle, int x,
                                  int y) {
   int width, height;
-  nvgImageSize(vg, imageHandle, &width, &height);
-  nvgDrawImage(vg, imageHandle, x, y, width, height);
+  nvgImageSize(ctx, imageHandle, &width, &height);
+  nvgDrawImage(ctx, imageHandle, x, y, width, height);
 }
 
-int nvgGetImageHandleFromPath(NVGcontext* vg, const char* filePath,
+int nvgGetImageHandleFromPath(NVGcontext* ctx, const char* filePath,
                               int imageFlags) {
-  return LoadImageFromPath(vg, filePath, imageFlags);
+  return LoadImageFromPath(ctx, filePath, imageFlags);
 }
 
-int nvgGetImageHandleFromMemory(NVGcontext* vg, const char* fileType,
+int nvgGetImageHandleFromMemory(NVGcontext* ctx, const char* fileType,
                                 const unsigned char* fileData, int dataSize,
                                 int imageFlags) {
-  return LoadImageFromBuffer(vg, fileType, fileData, dataSize, imageFlags);
+  return LoadImageFromBuffer(ctx, fileType, fileData, dataSize, imageFlags);
 }
 }

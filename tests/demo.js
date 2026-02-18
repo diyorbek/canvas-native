@@ -32,10 +32,10 @@ function clearCanvas(ctx, W, H) {
  */
 export function drawRects(ctx, W, H) {
   clearCanvas(ctx, W, H);
-  ctx.fillStyle = "#f00";
+  ctx.fillStyle = '#f00';
   ctx.fillRect(50, 50, 150, 100);
 
-  ctx.strokeStyle = "#00f";
+  ctx.strokeStyle = '#00f';
   ctx.lineWidth = 5;
   ctx.strokeRect(250, 50, 150, 100);
 
@@ -59,11 +59,11 @@ export function drawPaths(ctx, W, H) {
   ctx.closePath(); // Connects back to start (50, 300)
 
   // ctx.fillStyle = "rgba(0, 255, 0, 0.5)";
-  ctx.fillStyle = "#0f0";
+  ctx.fillStyle = '#0f0';
   ctx.fill();
 
   // ctx.strokeStyle = "darkgreen";
-  ctx.strokeStyle = "#500";
+  ctx.strokeStyle = '#500';
   ctx.lineWidth = 3;
   ctx.stroke();
 }
@@ -81,7 +81,7 @@ export function drawArcs(ctx, W, H) {
   ctx.beginPath();
   // arc(x, y, radius, startAngle, endAngle, counterClockwise)
   ctx.arc(300, 300, 70, 0, Math.PI * 2);
-  ctx.fillStyle = "#ff0";
+  ctx.fillStyle = '#ff0';
   ctx.fill();
 
   // Half circle (pac-man)
@@ -89,16 +89,16 @@ export function drawArcs(ctx, W, H) {
   ctx.moveTo(400, 300); // Move to center
   ctx.arc(400, 300, 70, 0.25 * Math.PI, 1.75 * Math.PI);
   ctx.closePath();
-  ctx.fillStyle = "#ff0";
+  ctx.fillStyle = '#ff0';
   ctx.fill();
-  ctx.strokeStyle = "#000";
+  ctx.strokeStyle = '#000';
   ctx.lineWidth = 1;
   ctx.stroke();
 
   // Just an arc line
   ctx.beginPath();
   ctx.arc(600, 300, 70, 0, Math.PI, true); // counter-clockwise
-  ctx.strokeStyle = "#f0f";
+  ctx.strokeStyle = '#f0f';
   ctx.lineWidth = 5;
   ctx.stroke();
 }
@@ -117,7 +117,7 @@ export function drawCurves(ctx, W, H) {
   ctx.moveTo(50, 200);
   // quadraticCurveTo(cp1x, cp1y, x, y)
   ctx.quadraticCurveTo(150, 50, 250, 200);
-  ctx.strokeStyle = "#f00";
+  ctx.strokeStyle = '#f00';
   ctx.lineWidth = 4;
   ctx.stroke();
 
@@ -126,7 +126,7 @@ export function drawCurves(ctx, W, H) {
   ctx.moveTo(350, 200);
   // bezierCurveTo(cp1x, cp1y, cp2x, cp2y, x, y)
   ctx.bezierCurveTo(400, 50, 500, 350, 550, 200);
-  ctx.strokeStyle = "#00f";
+  ctx.strokeStyle = '#00f';
   ctx.lineWidth = 4;
   ctx.stroke();
 }
@@ -140,15 +140,13 @@ export function drawCurves(ctx, W, H) {
  */
 export function drawText(ctx, W, H) {
   clearCanvas(ctx, W, H);
-
-  ctx.font = "48px Arial";
-  ctx.fillStyle = "#64b4ddaa";
-  ctx.fillText("Hello Canvas!", 50, 50);
-  ctx.fillStyle = "rgb(92, 0, 91)";
-  ctx.fillText("Hello Canvas!", 50, 100);
-  ctx.fillStyle = "rgba(88, 177, 63, 0.67)";
-  ctx.fillText("Hello Canvas!", 50, 150);
-
+  ctx.font = '48px sans-serif';
+  ctx.fillStyle = '#64b4ddaa';
+  ctx.fillText('Hello Canvas!', 50, 50);
+  ctx.fillStyle = 'rgb(92, 0, 91)';
+  ctx.fillText('Hello Canvas!', 50, 100);
+  ctx.fillStyle = 'rgba(88, 177, 63, 0.67)';
+  ctx.fillText('Hello Canvas!', 50, 150);
   // ctx.font = '30px "Times New Roman"';
   // ctx.strokeStyle = "#aaf";
   // ctx.textAlign = "center";
@@ -169,42 +167,42 @@ export function drawStyles(ctx, W, H) {
 
   // lineCap
   ctx.beginPath();
-  ctx.lineCap = "butt"; // Default
+  ctx.lineCap = 'butt'; // Default
   ctx.moveTo(500, 50);
   ctx.lineTo(700, 50);
-  ctx.strokeStyle = "#f00";
+  ctx.strokeStyle = '#f00';
   ctx.stroke();
 
   ctx.beginPath();
-  ctx.lineCap = "round";
+  ctx.lineCap = 'round';
   ctx.moveTo(500, 100);
   ctx.lineTo(700, 100);
-  ctx.strokeStyle = "#0f0";
+  ctx.strokeStyle = '#0f0';
   ctx.stroke();
 
   ctx.beginPath();
-  ctx.lineCap = "square";
+  ctx.lineCap = 'square';
   ctx.moveTo(500, 150);
   ctx.lineTo(700, 150);
-  ctx.strokeStyle = "#00f";
+  ctx.strokeStyle = '#00f';
   ctx.stroke();
 
   // lineJoin
   ctx.lineWidth = 15;
   ctx.beginPath();
-  ctx.lineJoin = "miter"; // Default
+  ctx.lineJoin = 'miter'; // Default
   ctx.moveTo(500, 300);
   ctx.lineTo(550, 250);
   ctx.lineTo(600, 300);
-  ctx.strokeStyle = "#0ef";
+  ctx.strokeStyle = '#0ef';
   ctx.stroke();
 
   ctx.beginPath();
-  ctx.lineJoin = "round";
+  ctx.lineJoin = 'round';
   ctx.moveTo(550, 300);
   ctx.lineTo(600, 250);
   ctx.lineTo(650, 300);
-  ctx.strokeStyle = "#f00";
+  ctx.strokeStyle = '#f00';
   ctx.stroke();
 }
 
@@ -227,19 +225,19 @@ export function drawTransforms(ctx, W, H) {
   ctx.rotate((Math.PI / 180) * 20); // 20 degrees
 
   // Draw rect centered on new, rotated origin
-  ctx.fillStyle = "#aaa";
+  ctx.fillStyle = '#aaa';
   ctx.fillRect(-50, -50, 100, 100);
 
   ctx.restore(); // Restore to the saved clean state
 
   // This rect is not rotated or translated
-  ctx.fillStyle = "#000";
+  ctx.fillStyle = '#000';
   ctx.fillRect(0, 0, 50, 50);
 
   // --- Scale ---
   ctx.save();
   ctx.scale(2, 0.5); // 2x width, 0.5x height
-  ctx.fillStyle = "#aaf";
+  ctx.fillStyle = '#aaf';
   // This rect will be drawn at (100, 400) but will
   // appear 200 wide and 50 tall.
   ctx.fillRect(50, 400, 100, 100);
@@ -280,12 +278,12 @@ export function drawImages(ctx, W, H, img) {
 export function drawAlpha(ctx, W, H) {
   clearCanvas(ctx, W, H);
   // globalAlpha
-  ctx.fillStyle = "#FD0"; // Yellow
+  ctx.fillStyle = '#FD0'; // Yellow
   ctx.fillRect(100, 100, 100, 100);
 
   ctx.globalAlpha = 0.5; // Set 50% transparency
 
-  ctx.fillStyle = "#09F"; // Blue
+  ctx.fillStyle = '#09F'; // Blue
   ctx.fillRect(150, 150, 100, 100);
 
   ctx.globalAlpha = 1.0; // Reset alpha
@@ -297,7 +295,7 @@ export function drawAlpha(ctx, W, H) {
   // ctx.fillRect(120, 120, 100, 100);
 
   // Reset composite operation to default
-  ctx.globalCompositeOperation = "source-over";
+  ctx.globalCompositeOperation = 'source-over';
 }
 
 /**
@@ -310,7 +308,7 @@ export function drawHouseDemo(ctx, W, H) {
   // Set line width
   ctx.lineWidth = 10;
 
-  ctx.strokeStyle = "#000";
+  ctx.strokeStyle = '#000';
 
   // Wall
   ctx.strokeRect(475, 240, 150, 110);
@@ -325,4 +323,28 @@ export function drawHouseDemo(ctx, W, H) {
   ctx.lineTo(650, 240);
   ctx.closePath();
   ctx.stroke();
+}
+
+/**
+ *
+ * @param {RenderingContext2D} ctx
+ * @param {number} W
+ * @param {number} H
+ */
+export function drawVariousFonts(ctx, W, H) {
+  // clearCanvas(ctx, W, H);
+  const fonts = [
+    '48px serif',
+    '48px Arial',
+    "36px 'Times New Roman'",
+    '24px Verdana',
+    'italic 30px Georgia',
+    "bold 40px 'Courier New'",
+  ];
+
+  fonts.forEach((font, index) => {
+    // ctx.font = font;
+    // ctx.fillStyle = 'rgb(53, 179, 28)';
+    ctx.fillText(`Font: ${font}`, 50, 50 + index * 60);
+  });
 }

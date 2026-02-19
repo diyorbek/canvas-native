@@ -35,9 +35,12 @@ target_link_libraries(${PROJECT_NAME} raylib nanovg)
 set(LIBRARY_NAME canvasnative)
 add_library(${LIBRARY_NAME} SHARED 
     native/lib.cpp 
+    native/utils.cpp 
+    native/window.cpp 
     native/graphics/texture.cpp 
     native/graphics/renderer.cpp
     native/nvg/image.cpp
+    native/nvg/rect.cpp
 )
 target_link_libraries(${LIBRARY_NAME} raylib nanovg)
 # target_link_options(${LIBRARY_NAME} PRIVATE "-Wl,-fvisibility=default")

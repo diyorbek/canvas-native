@@ -1,4 +1,3 @@
-
 #include "image.h"
 
 #include "raylib.h"

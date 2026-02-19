@@ -1,4 +1,3 @@
-
 #include "nanovg.h"
 
 extern "C" {

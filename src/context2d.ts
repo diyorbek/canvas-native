@@ -73,6 +73,13 @@ class NativeRenderingContext2D {
     );
   }
 
+  protected colorToBuffer(value: string) {
+    value = value.trim();
+    return value.trim().at(0) === '#'
+      ? ffi.symbols.HexToNVGColor(stringToBuffer(value))
+      : ffi.symbols.nvgRGBA(...parseColorString(value));
+  }
+
   protected getNvgAlign(align: CanvasTextAlign) {
     switch (align) {
       case 'left':
@@ -198,7 +205,6 @@ export class RenderingContext2D
   constructor(nativeCtx: Deno.PointerValue) {
     super(nativeCtx);
     this.font = '10px sans-serif';
-    this.fillStyle = '#64b4ddaa';
 
     ffi.symbols.nvgFillColor(
       nativeCtx,
@@ -223,12 +229,10 @@ export class RenderingContext2D
 
     this.#fillStyle = value;
 
-    const color =
-      value.trim().at(0) === '#'
-        ? ffi.symbols.HexToNVGColor(stringToBuffer(this.#fillStyle))
-        : ffi.symbols.nvgRGBA(...parseColorString(this.#fillStyle));
-
-    ffi.symbols.nvgFillColor(this.nativeCtx, color);
+    ffi.symbols.nvgFillColor(
+      this.nativeCtx,
+      this.colorToBuffer(this.#fillStyle),
+    );
   }
 
   get font() {
@@ -390,7 +394,7 @@ export class RenderingContext2D
 
     ffi.symbols.nvgStrokeColor(
       this.nativeCtx,
-      ffi.symbols.HexToNVGColor(stringToBuffer(this._strokeStyle)),
+      this.colorToBuffer(this._strokeStyle),
     );
   }
 
@@ -634,7 +638,7 @@ export class RenderingContext2D
     ffi.symbols.nvgRect(this.nativeCtx, x, y, w, h);
     ffi.symbols.nvgFillColor(
       this.nativeCtx,
-      ffi.symbols.HexToNVGColor(stringToBuffer(this.fillStyle as string)),
+      this.colorToBuffer(this.fillStyle as string),
     );
     ffi.symbols.nvgFill(this.nativeCtx);
   }
@@ -643,7 +647,7 @@ export class RenderingContext2D
     ffi.symbols.nvgRect(this.nativeCtx, x, y, w, h);
     ffi.symbols.nvgStrokeColor(
       this.nativeCtx,
-      ffi.symbols.HexToNVGColor(stringToBuffer(this.strokeStyle as string)),
+      this.colorToBuffer(this.strokeStyle as string),
     );
     ffi.symbols.nvgStroke(this.nativeCtx);
   }

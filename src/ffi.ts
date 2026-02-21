@@ -1,25 +1,25 @@
-import { NANOVG_SYMBOLS } from "./nanovgSymbols.ts";
-import { STRUCT_Image, STRUCT_NVGcolor } from "./structs.ts";
+import { NANOVG_SYMBOLS } from './nanovgSymbols.ts';
+import { STRUCT_Image, STRUCT_NVGcolor } from './structs.ts';
 
-export const ffi = Deno.dlopen("./build/libcanvasnative.dylib", {
+export const ffi = Deno.dlopen('./build/libcanvasnative.dylib', {
   ...NANOVG_SYMBOLS,
 
   // #region Custom functions
   CreateWindow: {
-    parameters: ["i32", "i32", "buffer", "pointer", "pointer"],
-    result: "void",
+    parameters: ['i32', 'i32', 'buffer', 'pointer', 'pointer'],
+    result: 'void',
   },
 
   HexToNVGColor: {
-    parameters: ["buffer"],
+    parameters: ['buffer'],
     result: STRUCT_NVGcolor,
   },
   // #endregion
 
   // #region NanoVG extended
   nvgClearRect: {
-    parameters: ["pointer", "f32", "f32", "f32", "f32"],
-    result: "void",
+    parameters: ['pointer', 'f32', 'f32', 'f32', 'f32'],
+    result: 'void',
   },
 
   /**
@@ -28,8 +28,8 @@ export const ffi = Deno.dlopen("./build/libcanvasnative.dylib", {
    * ```
    */
   nvgDrawImage: {
-    parameters: ["pointer", "i32", "i32", "i32", "i32", "i32"],
-    result: "void",
+    parameters: ['pointer', 'i32', 'i32', 'i32', 'i32', 'i32'],
+    result: 'void',
   },
 
   /**
@@ -38,8 +38,8 @@ export const ffi = Deno.dlopen("./build/libcanvasnative.dylib", {
    * ```
    */
   nvgDrawImageWithDeafultSize: {
-    parameters: ["pointer", "i32", "i32", "i32"],
-    result: "void",
+    parameters: ['pointer', 'i32', 'i32', 'i32'],
+    result: 'void',
   },
 
   /**
@@ -49,8 +49,8 @@ export const ffi = Deno.dlopen("./build/libcanvasnative.dylib", {
    * ```
    */
   nvgGetImageHandleFromPath: {
-    parameters: ["pointer", "buffer", "i32"],
-    result: "i32",
+    parameters: ['pointer', 'buffer', 'i32'],
+    result: 'i32',
   },
 
   /**
@@ -61,8 +61,8 @@ export const ffi = Deno.dlopen("./build/libcanvasnative.dylib", {
    * ```
    */
   nvgGetImageHandleFromMemory: {
-    parameters: ["pointer", "buffer", "buffer", "i32", "i32"],
-    result: "i32",
+    parameters: ['pointer', 'buffer', 'buffer', 'i32', 'i32'],
+    result: 'i32',
   },
   // #endregion
 
@@ -73,7 +73,7 @@ export const ffi = Deno.dlopen("./build/libcanvasnative.dylib", {
    * ```
    */
   LoadImageFromMemory: {
-    parameters: ["buffer", "buffer", "i32"],
+    parameters: ['buffer', 'buffer', 'i32'],
     result: STRUCT_Image,
   },
   /**
@@ -82,7 +82,7 @@ export const ffi = Deno.dlopen("./build/libcanvasnative.dylib", {
    * ```
    */
   LoadImage: {
-    parameters: ["buffer"],
+    parameters: ['buffer'],
     result: STRUCT_Image,
   },
 
@@ -93,7 +93,7 @@ export const ffi = Deno.dlopen("./build/libcanvasnative.dylib", {
    */
   UnloadImage: {
     parameters: [STRUCT_Image],
-    result: "void",
+    result: 'void',
   },
   // #endregion
 } as const);

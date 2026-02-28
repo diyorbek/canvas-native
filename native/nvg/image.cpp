@@ -1,32 +1,50 @@
 #include "image.h"
 
-#include "raylib.h"
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
+#include <stdio.h>
+
+static int LoadNvgImageFromPixels(NVGcontext* ctx, unsigned char* data,
+                                  int width, int height, int imageFlags) {
+  int handle = nvgCreateImageRGBA(ctx, width, height, imageFlags, data);
+  return handle;
+}
 
 int LoadImageFromPath(NVGcontext* ctx, const char* filePath, int imageFlags) {
-  Image image = LoadImage(filePath);
-  int imageHandle = nvgCreateImageRGBA(ctx, image.width, image.height,
-                                       imageFlags, (unsigned char*)image.data);
-  UnloadImage(image);
+  int width, height, channels;
+  // Force RGBA
+  unsigned char* data = stbi_load(filePath, &width, &height, &channels, 4);
+  if (!data) {
+    printf("Failed to load image: %s — %s\n", filePath, stbi_failure_reason());
+    return -1;
+  }
 
-  return imageHandle;
+  int handle = LoadNvgImageFromPixels(ctx, data, width, height, imageFlags);
+  stbi_image_free(data);
+  return handle;
 }
 
 int LoadImageFromBuffer(NVGcontext* ctx, const char* fileType,
                         const unsigned char* fileData, int dataSize,
                         int imageFlags) {
-  Image image = LoadImageFromMemory(fileType, fileData, dataSize);
-  int imageHandle = nvgCreateImageRGBA(ctx, image.width, image.height,
-                                       imageFlags, (unsigned char*)image.data);
-  UnloadImage(image);
+  int width, height, channels;
+  unsigned char* data =
+      stbi_load_from_memory(fileData, dataSize, &width, &height, &channels, 4);
+  if (!data) {
+    printf("Failed to load image from memory: %s\n", stbi_failure_reason());
+    return -1;
+  }
 
-  return imageHandle;
+  int handle = LoadNvgImageFromPixels(ctx, data, width, height, imageFlags);
+  stbi_image_free(data);
+  return handle;
 }
 
 void nvgDrawImage(NVGcontext* ctx, int imageHandle, int x, int y, int width,
                   int height) {
-  auto imgPaint =
+  NVGpaint imgPaint =
       nvgImagePattern(ctx, x, y, width, height, 0, imageHandle, 1.0f);
-
   nvgBeginPath(ctx);
   nvgRect(ctx, x, y, width, height);
   nvgFillPaint(ctx, imgPaint);

@@ -4,17 +4,32 @@ project(canvas-native)
 set(CMAKE_CXX_STANDARD 23)
 
 include(FetchContent)
-set(RAYLIB_VERSION 5.0)
 
+# SDL3
 FetchContent_Declare(
-    raylib
-    DOWNLOAD_EXTRACT_TIMESTAMP OFF
-    URL https://github.com/raysan5/raylib/archive/refs/tags/${RAYLIB_VERSION}.tar.gz
-    FIND_PACKAGE_ARGS
+    SDL3
+    GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
+    GIT_TAG release-3.2.8
 )
-FetchContent_MakeAvailable(raylib)
+FetchContent_MakeAvailable(SDL3)
 
-# NanoVG setup
+# glad (OpenGL loader)
+FetchContent_Declare(
+    glad
+    GIT_REPOSITORY https://github.com/Dav1dde/glad.git
+    GIT_TAG v0.1.36
+)
+FetchContent_MakeAvailable(glad)
+
+# stb (for image loading — replaces raylib's LoadImage)
+FetchContent_Declare(
+    stb
+    GIT_REPOSITORY https://github.com/nothings/stb.git
+    GIT_TAG master
+)
+FetchContent_MakeAvailable(stb)
+
+# NanoVG
 FetchContent_Declare(
     nanovg
     GIT_REPOSITORY https://github.com/memononen/nanovg.git
@@ -24,23 +39,36 @@ FetchContent_MakeAvailable(nanovg)
 set(NANOVG_SRC ${nanovg_SOURCE_DIR}/src/nanovg.c)
 add_library(nanovg ${NANOVG_SRC})
 target_include_directories(nanovg PUBLIC ${nanovg_SOURCE_DIR}/src)
-target_compile_definitions(nanovg PUBLIC NANOVG_GL3_IMPLEMENTATION NVG_NO_STB) # NVG_NO_STB - because Raylib also has this library causing duplicate symbols error
+target_compile_definitions(nanovg PUBLIC NANOVG_GL3_IMPLEMENTATION NVG_NO_STB)
 target_compile_options(nanovg PUBLIC -fvisibility=default)
 
-# app executable
-add_executable(${PROJECT_NAME} native/main.cpp)
-target_link_libraries(${PROJECT_NAME} raylib nanovg)
+# Common includes for all targets
+set(COMMON_INCLUDES
+    ${stb_SOURCE_DIR}
+)
 
-# shared library
-set(LIBRARY_NAME canvasnative)
-add_library(${LIBRARY_NAME} SHARED 
-    native/lib.cpp 
-    native/utils.cpp 
-    native/window.cpp 
-    native/graphics/texture.cpp 
+# app executable
+add_executable(${PROJECT_NAME} 
+    native/main.cpp
+    native/utils.cpp
+    native/graphics/texture.cpp
     native/graphics/renderer.cpp
     native/nvg/image.cpp
     native/nvg/rect.cpp
 )
-target_link_libraries(${LIBRARY_NAME} raylib nanovg)
-# target_link_options(${LIBRARY_NAME} PRIVATE "-Wl,-fvisibility=default")
+target_include_directories(${PROJECT_NAME} PRIVATE ${COMMON_INCLUDES})
+target_link_libraries(${PROJECT_NAME} SDL3::SDL3 glad nanovg)
+
+# shared library
+set(LIBRARY_NAME canvasnative)
+add_library(${LIBRARY_NAME} SHARED
+    native/lib.cpp
+    native/utils.cpp
+    native/window.cpp
+    native/graphics/texture.cpp
+    native/graphics/renderer.cpp
+    native/nvg/image.cpp
+    native/nvg/rect.cpp
+)
+target_include_directories(${LIBRARY_NAME} PRIVATE ${COMMON_INCLUDES})
+target_link_libraries(${LIBRARY_NAME} SDL3::SDL3 glad nanovg)

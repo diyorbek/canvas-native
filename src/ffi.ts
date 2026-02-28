@@ -1,5 +1,5 @@
 import { NANOVG_SYMBOLS } from './nanovgSymbols.ts';
-import { STRUCT_Image, STRUCT_NVGcolor } from './structs.ts';
+import { STRUCT_NVGcolor } from './structs.ts';
 
 export const ffi = Deno.dlopen('./build/libcanvasnative.dylib', {
   ...NANOVG_SYMBOLS,
@@ -63,37 +63,6 @@ export const ffi = Deno.dlopen('./build/libcanvasnative.dylib', {
   nvgGetImageHandleFromMemory: {
     parameters: ['pointer', 'buffer', 'buffer', 'i32', 'i32'],
     result: 'i32',
-  },
-  // #endregion
-
-  // #region Raylib
-  /**
-   * ```c
-   * Image LoadImageFromMemory(const char *fileType, const unsigned char *fileData, int dataSize)
-   * ```
-   */
-  LoadImageFromMemory: {
-    parameters: ['buffer', 'buffer', 'i32'],
-    result: STRUCT_Image,
-  },
-  /**
-   * ```c
-   * Image LoadImage(const char *fileType)
-   * ```
-   */
-  LoadImage: {
-    parameters: ['buffer'],
-    result: STRUCT_Image,
-  },
-
-  /**
-   * ```c
-   * void UnloadImage(Image image)
-   * ```
-   */
-  UnloadImage: {
-    parameters: [STRUCT_Image],
-    result: 'void',
   },
   // #endregion
 } as const);

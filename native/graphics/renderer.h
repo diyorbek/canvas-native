@@ -1,10 +1,10 @@
 #pragma once
 
+#include <functional>
+
 #include "nanovg.h"
-#include "raylib.h"
-#include "rlgl.h"
+#include "texture.h"
 
-void RenderBackgroundLayer(RenderTexture2D& texture);
-
-void RenderNvgLayer(RenderTexture2D& texture, NVGcontext* ctx, int width,
-                    int height, void (*render_callback)());
+void RenderBackgroundLayer(RenderTarget& target, int width, int height);
+void RenderNvgLayer(RenderTarget& target, NVGcontext* ctx, int width,
+                    int height, std::function<void()> render_callback);

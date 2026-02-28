@@ -1,36 +1,28 @@
 #include "renderer.h"
 
 #include "gl.h"
+#include "nanovg_gl_utils.h"
 
-void RenderBackgroundLayer(RenderTexture2D& texture) {
-  BeginTextureMode(texture);
-  ClearBackground(WHITE);
-  EndTextureMode();
+void RenderBackgroundLayer(RenderTarget& target, int width, int height) {
+  glBindFramebuffer(GL_FRAMEBUFFER, target.fbo);
+  glViewport(0, 0, width, height);
+  glClearColor(1.0f, 1.0f, 1.0f, 1.0f);  // white background
+  glClear(GL_COLOR_BUFFER_BIT);
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void RenderNvgLayer(RenderTexture2D& texture, NVGcontext* ctx, int width,
-                    int height, void (*render_callback)()) {
-  // Save Raylib's viewport state
-  GLint viewportBefore[4];
-  glGetIntegerv(GL_VIEWPORT, viewportBefore);
-
-  GLint currentFBO;
-  glGetIntegerv(GL_FRAMEBUFFER_BINDING, &currentFBO);
-
-  // Bind our FBO and set its viewport
-  glBindFramebuffer(GL_FRAMEBUFFER, texture.id);
+void RenderNvgLayer(RenderTarget& target, NVGcontext* ctx, int width,
+                    int height, std::function<void()> render_callback) {
+  glBindFramebuffer(GL_FRAMEBUFFER, target.fbo);
   glViewport(0, 0, width, height);
 
   glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
   glEnable(GL_STENCIL_TEST);
 
-  nvgBeginFrame(ctx, width, height, 1.0f);
+  nvgBeginFrame(ctx, (float)width, (float)height, 1.0f);
   render_callback();
   nvgEndFrame(ctx);
 
-  // CRITICAL: Restore Raylib's state
-  glBindFramebuffer(GL_FRAMEBUFFER, currentFBO);
-  glViewport(viewportBefore[0], viewportBefore[1], viewportBefore[2],
-             viewportBefore[3]);
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }

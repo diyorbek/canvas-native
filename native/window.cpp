@@ -47,7 +47,7 @@ void CreateWindow(int width, int height, const char* title,
 
     // --- JS batch pass (offscreen, persistent) ---
     auto batch = get_batch();
-    if (!batch.empty()) {
+    if (!batch.cmds.empty()) {
       nvgluBindFramebuffer(uiLayer);
       glViewport(0, 0, width, height);
       nvgBeginFrame(ctx, width, height, 1.0f);
@@ -74,6 +74,7 @@ void CreateWindow(int width, int height, const char* title,
     nvgRect(ctx, 0, 0, width, height);
     nvgFillPaint(ctx, uiPaint);
     nvgFill(ctx);
+
     nvgEndFrame(ctx);
 
     SDL_GL_SwapWindow(window);

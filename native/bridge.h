@@ -3,28 +3,37 @@
 
 #include "commands.h"
 
-static std::vector<float> shared_cmds;
+static std::vector<float> _cmds;
+static std::vector<uint8_t> _strs;
 static std::mutex mtx;
 
-extern "C" void submit_batch(float* buf, uint32_t count) {
+struct Batch {
+  std::vector<float> cmds;
+  std::vector<uint8_t> strs;
+};
+
+extern "C" void submit_batch(float* cmd_buf, uint32_t cmd_buf_length,
+                             uint8_t* str_buf, uint32_t str_buf_length) {
   std::lock_guard<std::mutex> lock(mtx);
-  shared_cmds.insert(shared_cmds.end(), buf, buf + count);
+  _cmds.insert(_cmds.end(), cmd_buf, cmd_buf + cmd_buf_length);
+  _strs.insert(_strs.end(), str_buf, str_buf + str_buf_length);
 }
 
-std::vector<float> get_batch() {
+Batch get_batch() {
   std::lock_guard<std::mutex> lock(mtx);
-  return std::move(shared_cmds);  // fast swap, no copy
+  return {std::move(_cmds), std::move(_strs)};  // fast swap, no copy
 }
 
-void execute_batch(NVGcontext* ctx, const std::vector<float>& batch) {
-  const float* buffer_pointer = batch.data();
-  const float* end            = buffer_pointer + batch.size();
+void execute_batch(NVGcontext* ctx, const Batch& batch) {
+  const float* cmd_pointer   = batch.cmds.data();
+  const uint8_t* str_pointer = batch.strs.data();
+  const float* end           = cmd_pointer + batch.cmds.size();
 
-  while (buffer_pointer < end) {
-    int op        = *buffer_pointer++;
-    int arg_count = *buffer_pointer++;
+  while (cmd_pointer < end) {
+    int op        = *cmd_pointer++;
+    int arg_count = *cmd_pointer++;
 
-    nvg_dispatcher[op](ctx, buffer_pointer);
-    buffer_pointer += arg_count;
+    nvg_dispatcher[op](ctx, cmd_pointer, str_pointer);
+    cmd_pointer += arg_count;
   }
 }

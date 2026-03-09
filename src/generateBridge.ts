@@ -8,12 +8,12 @@ const WHITELIST = [
   'nvgBezierTo',
   'nvgClearRect',
   'nvgClosePath',
-  'nvgCreateFont',
+  // 'nvgCreateFont',
   'nvgDrawImage',
   'nvgDrawImageWithDeafultSize',
   'nvgFill',
   'nvgFillColor',
-  'nvgFindFont',
+  // 'nvgFindFont',
   'nvgFontFaceId',
   'nvgFontSize',
   'nvgGetImageHandleFromMemory',
@@ -26,7 +26,6 @@ const WHITELIST = [
   'nvgMiterLimit',
   'nvgMoveTo',
   'nvgQuadTo',
-  'nvgRGBA',
   'nvgRect',
   'nvgRestore',
   'nvgRotate',
@@ -36,7 +35,7 @@ const WHITELIST = [
   'nvgStroke',
   'nvgStrokeColor',
   'nvgStrokeWidth',
-  'nvgText',
+  // 'nvgText',
   'nvgTextAlign',
   'nvgTextLetterSpacing',
   'nvgTransform',
@@ -60,21 +59,18 @@ Object.entries({
   // ...NANOVG_EXTENDED_SYMBOLS,
 })
   .toSorted()
-  .forEach(([name, { parameters, result }]) => {
+  .forEach(([name, { parameters }]) => {
     // if (parameters[0] === 'pointer' && result !== 'void') {
     //   console.log(name, typeof result);
     // }
 
-    if (
-      parameters[0] === 'pointer' &&
-      result === 'void' &&
-      WHITELIST.includes(name)
-    ) {
+    if (WHITELIST.includes(name)) {
       const command = name
         .replace(/([a-z])([A-Z])/g, '$1_$2')
         .replace('nvg_', '')
         .toUpperCase();
 
+      // Enum and command mapping list is small enough to log them, and copy-paste
       // console.log(command + '=' + a++ + ',');
       // console.log(
       //   `nvg_dispatcher[${command}] = nvg::${command.toLowerCase()};`,
@@ -132,10 +128,10 @@ Object.entries({
         .join(', ');
 
       const cppFunc = cppFuncArgs
-        ? `void ${command.toLowerCase()}(NVGcontext* ctx, const float* args) {
+        ? `void ${command.toLowerCase()}(NVGcontext* ctx, const float* args, const uint8_t*) {
   ${name}(ctx, ${cppFuncArgs});
 }`
-        : `void ${command.toLowerCase()}(NVGcontext* ctx, const float* args) {
+        : `void ${command.toLowerCase()}(NVGcontext* ctx, const float*, const uint8_t*) {
   ${name}(ctx);
 }`;
 

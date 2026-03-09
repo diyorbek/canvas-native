@@ -20,3 +20,7 @@ void nvgClearRect(NVGcontext* ctx, float x, float y, float w, float h) {
   nvgRect(ctx, 0, 0, 0, 0);
   nvgFill(ctx);
 }
+
+void nvg::clear_rect(NVGcontext* ctx, const float* args, const uint8_t*) {
+  nvgClearRect(ctx, args[0], args[1], args[2], args[3]);
+}

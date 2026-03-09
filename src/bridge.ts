@@ -2,6 +2,15 @@ import { Command, CommandBuffer } from './commandBuffer.ts';
 import { NanoVGBridge } from './nanoVGBridge.ts';
 
 export class Bridge extends NanoVGBridge {
+  static nvgText(x: number, y: number, text: string) {
+    CommandBuffer.write(Command.TEXT);
+    CommandBuffer.write(3);
+    CommandBuffer.write(x);
+    CommandBuffer.write(y);
+    CommandBuffer.write(text);
+    CommandBuffer.schedule();
+  }
+
   static nvgClearRect(x: number, y: number, w: number, h: number) {
     CommandBuffer.write(Command.CLEAR_RECT);
     CommandBuffer.write(4);

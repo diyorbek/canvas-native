@@ -67,7 +67,7 @@ export const ffi = Deno.dlopen('./build/libcanvasnative.dylib', {
   },
 
   submit_batch: {
-    parameters: ['buffer', 'i32'],
+    parameters: ['buffer', 'i32', 'buffer', 'i32'],
     result: 'void',
   },
   // #endregion

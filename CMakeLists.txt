@@ -55,6 +55,7 @@ add_executable(${PROJECT_NAME}
     native/graphics/renderer.cpp
     native/nvg/image.cpp
     native/nvg/rect.cpp
+    native/nvg/text.cpp
 )
 target_include_directories(${PROJECT_NAME} PRIVATE ${COMMON_INCLUDES})
 target_link_libraries(${PROJECT_NAME} SDL3::SDL3 glad nanovg)
@@ -69,6 +70,7 @@ add_library(${LIBRARY_NAME} SHARED
     native/graphics/renderer.cpp
     native/nvg/image.cpp
     native/nvg/rect.cpp
+    native/nvg/text.cpp
 )
 target_include_directories(${LIBRARY_NAME} PRIVATE ${COMMON_INCLUDES})
 target_link_libraries(${LIBRARY_NAME} SDL3::SDL3 glad nanovg)

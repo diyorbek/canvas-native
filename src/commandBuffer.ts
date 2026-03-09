@@ -1,12 +1,35 @@
 import { ffi } from './ffi.ts';
 
 export class CommandBuffer {
-  private static buf = new Float32Array(2 ** 16);
-  private static head = 0;
+  private static cmdBuffer = new Float32Array(2 ** 16);
+  private static strBuffer = new Uint8Array(2 ** 16);
+  private static cmdHead = 0;
+  private static strHead = 0;
   private static scheduled = false;
+  private static encoder = new TextEncoder(); // UTF-8 by default
 
-  static write(value: number) {
-    this.buf[this.head++] = value;
+  static write(value: string): void;
+  static write(value: number): void;
+  static write(value: string | number): void {
+    if (typeof value === 'number') {
+      this.writeNumber(value);
+    } else {
+      const offset = this.writeString(value);
+      this.writeNumber(offset);
+    }
+  }
+
+  private static writeNumber(value: number): void {
+    this.cmdBuffer[this.cmdHead++] = value;
+  }
+
+  private static writeString(str: string): number {
+    const offset = this.strHead;
+    const bytes = this.encoder.encode(str);
+    this.strBuffer.set(bytes, this.strHead);
+    this.strHead += bytes.length;
+    this.strBuffer[this.strHead++] = 0; // null terminator
+    return offset;
   }
 
   static schedule() {
@@ -16,13 +39,19 @@ export class CommandBuffer {
   }
 
   static flush() {
-    if (this.head === 0) return;
-    ffi.symbols.submit_batch(this.buf, this.head);
+    if (this.cmdHead === 0) return;
+    ffi.symbols.submit_batch(
+      this.cmdBuffer,
+      this.cmdHead,
+      this.strBuffer,
+      this.strHead,
+    );
     this.reset();
   }
 
   static reset() {
-    this.head = 0;
+    this.cmdHead = 0;
+    this.strHead = 0;
     this.scheduled = false;
   }
 }
@@ -63,4 +92,5 @@ export enum Command {
   CLEAR_RECT = 100,
   DRAW_IMAGE = 101,
   DRAW_IMAGE_WITH_DEAFULT_SIZE = 102,
+  TEXT = 103,
 }

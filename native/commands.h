@@ -1,6 +1,10 @@
 #pragma once
 
+#include <cstdint>
+
 #include "nvg.h"
+#include "nvg/rect.h"
+#include "nvg/text.h"
 
 enum Command {
   ARC                        = 0,
@@ -38,9 +42,10 @@ enum Command {
   CLEAR_RECT                   = 100,
   DRAW_IMAGE                   = 101,
   DRAW_IMAGE_WITH_DEAFULT_SIZE = 102,
+  TEXT                         = 103
 };
 
-typedef void (*NVGCmd)(NVGcontext*, const float*);
+typedef void (*NVGCmd)(NVGcontext*, const float*, const uint8_t*);
 NVGCmd nvg_dispatcher[256] = {};
 
 void init_commands() {
@@ -74,4 +79,8 @@ void init_commands() {
   nvg_dispatcher[TEXT_LETTER_SPACING]        = nvg::text_letter_spacing;
   nvg_dispatcher[TRANSFORM]                  = nvg::transform;
   nvg_dispatcher[TRANSLATE]                  = nvg::translate;
+
+  // Custom commands
+  nvg_dispatcher[CLEAR_RECT] = nvg::clear_rect;
+  nvg_dispatcher[TEXT]       = nvg::text;
 }

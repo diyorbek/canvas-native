@@ -29,7 +29,7 @@ int main(int argc, char* argv[]) {
   NVGLUframebuffer* uiLayer = nvgluCreateFramebuffer(vg, 1024, 768, 0);
 
   float rotation = 0;
-  bool quit = false;
+  bool quit      = false;
   SDL_Event ev;
 
   while (!quit) {
@@ -40,12 +40,12 @@ int main(int argc, char* argv[]) {
     // --- FFI RENDER PASS (offscreen framebuffer) ---
     nvgluBindFramebuffer(uiLayer);
     glViewport(0, 0, 1024, 768);
-    glClearColor(0, 0, 0, 0);
-    glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+    // glClearColor(0, 0, 0, 0);
+    // glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
     nvgBeginFrame(vg, 1024, 768, 1.0f);
 
-    rotation += 0.02f;
+    rotation += 0.00002f;
     nvgSave(vg);
     nvgTranslate(vg, 500, 350);
     nvgRotate(vg, rotation);

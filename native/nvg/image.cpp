@@ -1,9 +1,9 @@
 #include "image.h"
 
 #define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
-
 #include <stdio.h>
+
+#include "stb_image.h"
 
 static int LoadNvgImageFromPixels(NVGcontext* ctx, unsigned char* data,
                                   int width, int height, int imageFlags) {

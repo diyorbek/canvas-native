@@ -2,7 +2,7 @@
 //   float r,g,b,a;
 // };
 export const STRUCT_NVGcolor: Deno.NativeStructType = {
-  struct: ["f32", "f32", "f32", "f32"],
+  struct: ['f32', 'f32', 'f32', 'f32'],
 };
 
 // struct NVGpaint {
@@ -16,24 +16,12 @@ export const STRUCT_NVGcolor: Deno.NativeStructType = {
 // };
 export const STRUCT_NVGpaint = {
   struct: [
-    ...["f32", "f32", "f32", "f32", "f32", "f32"], // xform[6]
-    ...["f32", "f32"], // extent[2]
-    "f32", // radius
-    "f32", // feather
+    ...['f32', 'f32', 'f32', 'f32', 'f32', 'f32'], // xform[6]
+    ...['f32', 'f32'], // extent[2]
+    'f32', // radius
+    'f32', // feather
     STRUCT_NVGcolor, // innerColor
     STRUCT_NVGcolor, // outerColor
-    "i32", // image
+    'i32', // image
   ],
-};
-
-// RAYLIB Image, pixel data stored in CPU memory (RAM)
-// typedef struct Image {
-//     void *data;             // Image raw data
-//     int width;              // Image base width
-//     int height;             // Image base height
-//     int mipmaps;            // Mipmap levels, 1 by default
-//     int format;             // Data format (PixelFormat type)
-// } Image;
-export const STRUCT_Image: Deno.NativeStructType = {
-  struct: ["pointer", "i32", "i32", "i32", "i32"],
 };

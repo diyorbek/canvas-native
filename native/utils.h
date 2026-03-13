@@ -1,3 +1,3 @@
 #include "nanovg.h"
 
-extern "C" NVGcolor HexToNVGColor(const char* hexColor);
+extern "C" NVGcolor hex_to_NVGColor(const char* hexColor);

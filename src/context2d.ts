@@ -76,7 +76,7 @@ class NativeRenderingContext2D {
   protected colorToBuffer(value: string) {
     value = value.trim();
     return value.trim().at(0) === '#'
-      ? ffi.symbols.HexToNVGColor(stringToBuffer(value))
+      ? ffi.symbols.hex_to_NVGColor(stringToBuffer(value))
       : ffi.symbols.nvgRGBA(...parseColorString(value));
   }
 
@@ -208,7 +208,7 @@ export class RenderingContext2D
 
     ffi.symbols.nvgFillColor(
       nativeCtx,
-      ffi.symbols.HexToNVGColor(stringToBuffer('#000')),
+      ffi.symbols.hex_to_NVGColor(stringToBuffer('#000')),
     );
   }
 

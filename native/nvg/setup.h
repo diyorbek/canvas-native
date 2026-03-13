@@ -1,6 +1,7 @@
 #pragma once
 
-#include "../graphics/gl.h"
+#include <glad/glad.h>
+
 #include "nanovg.h"
 
 #ifndef NANOVG_GL3_IMPLEMENTATION

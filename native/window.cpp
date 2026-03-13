@@ -13,8 +13,9 @@
 // Local headers
 #include "bridge.h"
 
-void CreateWindow(int width, int height, const char* title,
-                  void (*init_callback)(void* ctx), void (*render_callback)()) {
+void create_window(int width, int height, const char* title,
+                   void (*init_callback)(void* ctx),
+                   void (*render_callback)()) {
   SDL_Init(SDL_INIT_VIDEO);
 
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);

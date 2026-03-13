@@ -5,7 +5,7 @@
 // Local headers
 #include "utils.h"
 
-NVGcolor HexToNVGColor(const char* hexColor) {
+NVGcolor hex_to_NVGColor(const char* hexColor) {
   std::string hex = hexColor;
 
   if (!hex.empty() && hex[0] == '#') {

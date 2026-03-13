@@ -30,7 +30,7 @@ export function createWindow(
     () => callback(ctx),
   );
 
-  ffi.symbols.CreateWindow(
+  ffi.symbols.create_window(
     width,
     height,
     stringToBuffer(title),

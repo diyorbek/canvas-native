@@ -56,12 +56,12 @@ export const ffi = Deno.dlopen('./build/libcanvasnative.dylib', {
   ...NANOVG_EXTENDED_SYMBOLS,
 
   // #region Custom functions
-  CreateWindow: {
+  create_window: {
     parameters: ['i32', 'i32', 'buffer', 'pointer', 'pointer'],
     result: 'void',
   },
 
-  HexToNVGColor: {
+  hex_to_NVGColor: {
     parameters: ['buffer'],
     result: STRUCT_NVGcolor,
   },

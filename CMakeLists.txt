@@ -51,8 +51,6 @@ set(COMMON_INCLUDES
 add_executable(${PROJECT_NAME} 
     native/main.cpp
     native/utils.cpp
-    native/graphics/texture.cpp
-    native/graphics/renderer.cpp
     native/nvg/image.cpp
     native/nvg/rect.cpp
     native/nvg/text.cpp
@@ -66,8 +64,6 @@ add_library(${LIBRARY_NAME} SHARED
     native/lib.cpp
     native/utils.cpp
     native/window.cpp
-    native/graphics/texture.cpp
-    native/graphics/renderer.cpp
     native/nvg/image.cpp
     native/nvg/rect.cpp
     native/nvg/text.cpp

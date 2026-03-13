@@ -1,14 +1,19 @@
 import { Bridge } from './src/bridge.ts';
 
+Bridge.nvgFillColor(10, 25, 130, 255);
+Bridge.nvgFontSize(30);
+Bridge.nvgText(350, 80, 'Hello, Canvas Native!');
+
 let i = 0;
 
 setInterval(() => {
-  Bridge.nvgFillColor(0, 0, 0, 255);
-  Bridge.nvgText(50, 50, 'Hello, Canvas Native!');
   // Bridge.nvgClearRect(0, 0, 800, 500);
+  Bridge.nvgFillColor(110, 25, 130, 255);
+  // Bridge.nvgFillColor(10, 0, 130, 255);
+  Bridge.nvgFontSize(30);
+  Bridge.nvgText(50, 80, 'Hello, Canvas Native!');
   Bridge.nvgBeginPath();
-  Bridge.nvgRect(100, i + 100, 100, 100);
-  Bridge.nvgFillColor(200, 0, 100, 255);
+  Bridge.nvgRect(100, i, 100, 100);
   Bridge.nvgFill();
-  i++;
+  i += 1;
 }, 0);

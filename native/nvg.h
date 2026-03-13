@@ -30,7 +30,7 @@ void fill(NVGcontext* ctx, const float*, const uint8_t*) {
 }
 
 void fill_color(NVGcontext* ctx, const float* args, const uint8_t*) {
-  nvgFillColor(ctx, nvgRGBAf(args[0], args[1], args[2], args[3]));
+  nvgFillColor(ctx, nvgRGBA(args[0], args[1], args[2], args[3]));
 }
 
 void font_face_id(NVGcontext* ctx, const float* args, const uint8_t*) {

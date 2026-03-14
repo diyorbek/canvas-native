@@ -13,9 +13,18 @@
 // Local headers
 #include "bridge.h"
 
-void create_window(int width, int height, const char* title,
-                   void (*init_callback)(void* ctx),
-                   void (*render_callback)()) {
+struct Meta {
+  int width;
+  int height;
+  SDL_Window* window;
+  SDL_GLContext gl_ctx;
+  NVGcontext* nvg_ctx;
+  NVGLUframebuffer* canvas_layer;
+} meta;
+
+void* get_native_ctx() { return meta.nvg_ctx; }
+
+void* create_window(int width, int height, const char* title) {
   SDL_Init(SDL_INIT_VIDEO);
 
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
@@ -23,18 +32,28 @@ void create_window(int width, int height, const char* title,
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
   SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 
-  SDL_Window* window =
-      SDL_CreateWindow("SDL3 + NVG", width, height, SDL_WINDOW_OPENGL);
+  meta.width  = width;
+  meta.height = height;
+  meta.window = SDL_CreateWindow(title, width, height, SDL_WINDOW_OPENGL);
+  meta.gl_ctx = SDL_GL_CreateContext(meta.window);
 
-  SDL_GLContext mainContext = SDL_GL_CreateContext(window);
-  SDL_GL_MakeCurrent(window, mainContext);
+  SDL_GL_MakeCurrent(meta.window, meta.gl_ctx);
   gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress);
 
-  NVGcontext* ctx           = nvgCreateGL3(NVG_ANTIALIAS | NVG_STENCIL_STROKES);
-  NVGLUframebuffer* uiLayer = nvgluCreateFramebuffer(ctx, width, height, 0);
+  meta.nvg_ctx      = nvgCreateGL3(NVG_ANTIALIAS | NVG_STENCIL_STROKES);
+  meta.canvas_layer = nvgluCreateFramebuffer(meta.nvg_ctx, width, height, 0);
 
   init_commands();
-  init_callback(ctx);
+
+  return meta.nvg_ctx;
+}
+
+void start_main_loop(void (*render_callback)()) {
+  int width                      = meta.width;
+  int height                     = meta.height;
+  SDL_Window* window             = meta.window;
+  NVGcontext* ctx                = meta.nvg_ctx;
+  NVGLUframebuffer* canvas_layer = meta.canvas_layer;
 
   bool quit = false;
   SDL_Event ev;
@@ -49,7 +68,7 @@ void create_window(int width, int height, const char* title,
     // --- JS batch pass (offscreen, persistent) ---
     auto batch = get_batch();
     if (!batch.cmds.empty()) {
-      nvgluBindFramebuffer(uiLayer);
+      nvgluBindFramebuffer(canvas_layer);
       glViewport(0, 0, width, height);
       nvgBeginFrame(ctx, width, height, 1.0f);
       glEnable(GL_BLEND);
@@ -65,24 +84,26 @@ void create_window(int width, int height, const char* title,
     glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
     nvgBeginFrame(ctx, width, height, 1.0f);
+
     glEnable(GL_BLEND);
     glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 
-    NVGpaint uiPaint =
-        nvgImagePattern(ctx, 0, 0, width, height, 0, uiLayer->image, 1.0f);
+    auto canvas_frame =
+        nvgImagePattern(ctx, 0, 0, width, height, 0, canvas_layer->image, 1.0f);
     nvgBeginPath(ctx);
     nvgRect(ctx, 0, 0, width, height);
-    nvgFillPaint(ctx, uiPaint);
+    nvgFillPaint(ctx, canvas_frame);
     nvgFill(ctx);
-
+    render_callback();
     nvgEndFrame(ctx);
 
     SDL_GL_SwapWindow(window);
   }
 
-  nvgluDeleteFramebuffer(uiLayer);
+  nvgluDeleteFramebuffer(canvas_layer);
   nvgDeleteGL3(ctx);
-  SDL_GL_DestroyContext(mainContext);
+
+  SDL_GL_DestroyContext(meta.gl_ctx);
   SDL_DestroyWindow(window);
   SDL_Quit();
 }

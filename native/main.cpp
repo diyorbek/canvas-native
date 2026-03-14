@@ -24,9 +24,9 @@ int main(int argc, char* argv[]) {
   SDL_GL_MakeCurrent(window, mainContext);
   gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress);
 
-  NVGcontext* vg = nvgCreateGL3(NVG_ANTIALIAS | NVG_STENCIL_STROKES);
+  NVGcontext* ctx = nvgCreateGL3(NVG_ANTIALIAS | NVG_STENCIL_STROKES);
 
-  NVGLUframebuffer* uiLayer = nvgluCreateFramebuffer(vg, 1024, 768, 0);
+  NVGLUframebuffer* uiLayer = nvgluCreateFramebuffer(ctx, 1024, 768, 0);
 
   float rotation = 0;
   bool quit      = false;
@@ -43,24 +43,24 @@ int main(int argc, char* argv[]) {
     // glClearColor(0, 0, 0, 0);
     // glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-    nvgBeginFrame(vg, 1024, 768, 1.0f);
+    nvgBeginFrame(ctx, 1024, 768, 1.0f);
 
     rotation += 0.00002f;
-    nvgSave(vg);
-    nvgTranslate(vg, 500, 350);
-    nvgRotate(vg, rotation);
-    nvgBeginPath(vg);
-    nvgRect(vg, -50, -50, 100, 100);
-    nvgStrokeColor(vg, nvgRGBA(255, 165, 0, 255));
-    nvgStrokeWidth(vg, 10);
-    nvgStroke(vg);
-    nvgRestore(vg);
+    nvgSave(ctx);
+    nvgTranslate(ctx, 500, 350);
+    nvgRotate(ctx, rotation);
+    nvgBeginPath(ctx);
+    nvgRect(ctx, -50, -50, 100, 100);
+    nvgStrokeColor(ctx, nvgRGBA(255, 165, 0, 255));
+    nvgStrokeWidth(ctx, 10);
+    nvgStroke(ctx);
+    nvgRestore(ctx);
 
-    nvgFontSize(vg, 24.0f);
-    nvgFillColor(vg, nvgRGBA(255, 255, 255, 255));
-    nvgTextAlign(vg, NVG_ALIGN_CENTER | NVG_ALIGN_MIDDLE);
-    nvgText(vg, 500, 450, "RENDERED BY FFI PASS", NULL);
-    nvgEndFrame(vg);
+    nvgFontSize(ctx, 24.0f);
+    nvgFillColor(ctx, nvgRGBA(255, 255, 255, 255));
+    nvgTextAlign(ctx, NVG_ALIGN_CENTER | NVG_ALIGN_MIDDLE);
+    nvgText(ctx, 500, 450, "RENDERED BY FFI PASS", NULL);
+    nvgEndFrame(ctx);
 
     // --- MAIN RENDER PASS (screen) ---
     nvgluBindFramebuffer(NULL);
@@ -68,30 +68,30 @@ int main(int argc, char* argv[]) {
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-    nvgBeginFrame(vg, 1024, 768, 1.0f);
+    nvgBeginFrame(ctx, 1024, 768, 1.0f);
 
-    nvgBeginPath(vg);
-    nvgRoundedRect(vg, 300, 200, 400, 300, 20);
-    nvgFillColor(vg, nvgRGBA(50, 50, 50, 200));
-    nvgFill(vg);
+    nvgBeginPath(ctx);
+    nvgRoundedRect(ctx, 300, 200, 400, 300, 20);
+    nvgFillColor(ctx, nvgRGBA(50, 50, 50, 200));
+    nvgFill(ctx);
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 
     NVGpaint uiPaint =
-        nvgImagePattern(vg, 0, 0, 1024, 768, 0, uiLayer->image, 1.0f);
-    nvgBeginPath(vg);
-    nvgRect(vg, 0, 0, 1024, 768);
-    nvgFillPaint(vg, uiPaint);
-    nvgFill(vg);
+        nvgImagePattern(ctx, 0, 0, 1024, 768, 0, uiLayer->image, 1.0f);
+    nvgBeginPath(ctx);
+    nvgRect(ctx, 0, 0, 1024, 768);
+    nvgFillPaint(ctx, uiPaint);
+    nvgFill(ctx);
 
-    nvgEndFrame(vg);
+    nvgEndFrame(ctx);
 
     SDL_GL_SwapWindow(window);
   }
 
   nvgluDeleteFramebuffer(uiLayer);
-  nvgDeleteGL3(vg);
+  nvgDeleteGL3(ctx);
   SDL_GL_DestroyContext(mainContext);
   SDL_DestroyWindow(window);
   SDL_Quit();

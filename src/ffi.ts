@@ -57,8 +57,18 @@ export const ffi = Deno.dlopen('./build/libcanvasnative.dylib', {
 
   // #region Custom functions
   create_window: {
-    parameters: ['i32', 'i32', 'buffer', 'pointer', 'pointer'],
+    parameters: ['i32', 'i32', 'buffer'],
+    result: 'pointer',
+  },
+
+  start_main_loop: {
+    parameters: ['pointer'],
     result: 'void',
+  },
+
+  get_native_ctx: {
+    parameters: [],
+    result: 'pointer',
   },
 
   hex_to_NVGColor: {

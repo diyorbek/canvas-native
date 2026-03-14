@@ -4,37 +4,47 @@ import { RenderingContext2D } from './src/context2d.ts';
 import { ffi } from './src/ffi.ts';
 import { stringToBuffer } from './src/utils.ts';
 
-export function createWindow(
+async function spawnWorker(path: string) {
+  const workerSignal = Promise.withResolvers();
+  const workerPath = new URL(path, import.meta.url).href;
+  const worker = new Worker(workerPath, { type: 'module' });
+
+  worker.addEventListener('message', (e) => {
+    console.log(e.data);
+    workerSignal.resolve(e.data);
+  });
+
+  await workerSignal.promise;
+
+  worker.postMessage({ type: 1 });
+
+  return () => worker.terminate();
+}
+
+export async function createWindow(
   width: number,
   height: number,
   title: string,
-  callback: (ctx: RenderingContext2D) => void,
+  workerPath: string = './worker.ts',
 ) {
-  let ctx: RenderingContext2D;
-
-  const initCallback = new Deno.UnsafeCallback(
-    {
-      parameters: ['pointer'],
-      result: 'void',
-    } as const,
-    (nativeCtx: Deno.PointerValue) => {
-      ctx = new RenderingContext2D(nativeCtx);
-    },
-  );
-
-  const renderCallback = new Deno.UnsafeCallback(
-    {
-      parameters: [],
-      result: 'void',
-    } as const,
-    () => callback(ctx),
-  );
-
-  ffi.symbols.create_window(
+  const nativeCtx = ffi.symbols.create_window(
     width,
     height,
     stringToBuffer(title),
-    initCallback.pointer,
-    renderCallback.pointer,
   );
+  const ctx = new RenderingContext2D(nativeCtx);
+
+  const terminateWorker = await spawnWorker(workerPath);
+
+  return {
+    mainLoop: (callback: (ctx: RenderingContext2D) => void) => {
+      const renderCallback = new Deno.UnsafeCallback(
+        { parameters: [], result: 'void' } as const,
+        () => callback(ctx),
+      );
+
+      ffi.symbols.start_main_loop(renderCallback.pointer);
+      Promise.resolve().then(() => terminateWorker());
+    },
+  };
 }

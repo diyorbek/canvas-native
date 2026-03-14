@@ -6,11 +6,9 @@ import * as demos from './tests/demo.js';
 const width = 800;
 const height = 500;
 
-const worker = new Worker(new URL('./worker.ts', import.meta.url).href, {
-  type: 'module',
-});
+const { mainLoop } = await createWindow(width, height, 'Canvas Native Demo');
 
-createWindow(width, height, 'Canvas Native Demo', (ctx: RenderingContext2D) => {
+mainLoop((ctx: RenderingContext2D) => {
   /// obsolete
   demos.drawHouseDemo(ctx, width, height);
   demos.drawRects(ctx, width, height);
@@ -19,9 +17,7 @@ createWindow(width, height, 'Canvas Native Demo', (ctx: RenderingContext2D) => {
   demos.drawCurves(ctx, width, height);
   demos.drawStyles(ctx, width, height);
   demos.drawImages(ctx, width, height, new Image('./img.png'));
-  demos.drawText(ctx, width, height);
+  // demos.drawText(ctx, width, height);
   // demos.drawAlpha(ctx, width, height);
   // demos.drawTransforms(ctx, width, height);
 });
-
-worker.terminate();

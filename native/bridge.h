@@ -5,7 +5,8 @@
 
 static std::vector<float> _cmds;
 static std::vector<uint8_t> _strs;
-static std::mutex mtx;
+static std::mutex batch_mtx;
+static std::condition_variable batch_cv;
 
 struct Batch {
   std::vector<float> cmds;
@@ -14,13 +15,15 @@ struct Batch {
 
 extern "C" void submit_batch(float* cmd_buf, uint32_t cmd_buf_length,
                              uint8_t* str_buf, uint32_t str_buf_length) {
-  std::lock_guard<std::mutex> lock(mtx);
+  std::lock_guard<std::mutex> lock(batch_mtx);
   _cmds.insert(_cmds.end(), cmd_buf, cmd_buf + cmd_buf_length);
   _strs.insert(_strs.end(), str_buf, str_buf + str_buf_length);
+
+  batch_cv.notify_one();  // wake FFI thread
 }
 
 Batch get_batch() {
-  std::lock_guard<std::mutex> lock(mtx);
+  std::lock_guard<std::mutex> lock(batch_mtx);
   return {std::move(_cmds), std::move(_strs)};  // fast swap, no copy
 }
 

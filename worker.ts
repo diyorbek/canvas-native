@@ -1,9 +1,19 @@
 import { Bridge } from './src/bridge.ts';
 import { requestAnimationFrame } from './src/frameLoop.ts';
 requestAnimationFrame;
+
 Bridge.nvgFillColor(10, 25, 130, 255);
 Bridge.nvgFontSize(30);
 Bridge.nvgText(350, 80, 'Hello, Canvas Native!');
+
+// this gives segfault cuz worker itselt is aready a separate thread
+// const nativeCtx = ffi.symbols.get_native_ctx();
+// const handle = ffi.symbols.nvgGetImageHandleFromPath(
+//   nativeCtx,
+//   stringToBuffer('./img.png'),
+//   0,
+// );
+// console.log({ nativeCtx, handle });
 
 let i = 0;
 

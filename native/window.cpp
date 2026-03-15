@@ -1,5 +1,9 @@
 #include "window.h"
 
+#include <atomic>
+#include <future>
+#include <thread>
+
 /// Must be included before SDL
 #include <glad/glad.h>
 ///
@@ -17,12 +21,58 @@ struct Meta {
   int width;
   int height;
   SDL_Window* window;
-  SDL_GLContext gl_ctx;
-  NVGcontext* nvg_ctx;
-  NVGLUframebuffer* canvas_layer;
+  SDL_GLContext main_ctx;          // main thread — compositing only
+  SDL_GLContext ffi_ctx;           // FFI thread — all NVG rendering
+  NVGcontext* main_nvg;            // main thread — compositing only
+  NVGcontext* ffi_nvg;             // FFI thread — returned to JS worker
+  NVGLUframebuffer* canvas_layer;  // main_nvg owned, FFI thread rendered
+  std::thread ffi_thread;
 } meta;
 
-void* get_native_ctx() { return meta.nvg_ctx; }
+static std::atomic<bool> ffi_running{true};
+
+void* get_native_ctx() { return meta.ffi_nvg; }
+
+// --- FFI thread ---
+// Owns the NVG context
+// Executes JS command batches and renders into canvas_layer.
+// Signals ready via promise once GL+NVG init is complete.
+void ffi_thread_func(std::promise<NVGcontext*> ready) {
+  SDL_GL_MakeCurrent(meta.window, meta.ffi_ctx);
+
+  // FFI thread needs its own glad bindings
+  gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress);
+
+  meta.ffi_nvg = nvgCreateGL3(NVG_ANTIALIAS | NVG_STENCIL_STROKES);
+
+  init_commands();
+
+  // ffi_nvg is ready — main thread can proceed
+  ready.set_value(meta.ffi_nvg);
+
+  // Batch execution loop — sleeps until submit_batch wakes us
+  while (true) {
+    {
+      std::unique_lock<std::mutex> lock(batch_mtx);
+      batch_cv.wait(lock, [] { return !_cmds.empty() || !ffi_running; });
+    }  // release lock before get_batch acquires it
+
+    if (!ffi_running) break;
+
+    auto batch = get_batch();
+
+    nvgluBindFramebuffer(meta.canvas_layer);
+    glViewport(0, 0, meta.width, meta.height);
+    nvgBeginFrame(meta.ffi_nvg, meta.width, meta.height, 1.0f);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+    execute_batch(meta.ffi_nvg, batch);
+    nvgEndFrame(meta.ffi_nvg);
+
+    // Flush so main thread can see the rendered texture
+    glFlush();
+  }
+}
 
 void* create_window(int width, int height, const char* title) {
   SDL_Init(SDL_INIT_VIDEO);
@@ -32,28 +82,41 @@ void* create_window(int width, int height, const char* title) {
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
   SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 
+  // Enable GL resource sharing between contexts
+  SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1);
+
   meta.width  = width;
   meta.height = height;
   meta.window = SDL_CreateWindow(title, width, height, SDL_WINDOW_OPENGL);
-  meta.gl_ctx = SDL_GL_CreateContext(meta.window);
 
-  SDL_GL_MakeCurrent(meta.window, meta.gl_ctx);
+  // Create main context first — ffi_ctx shares its resources
+  meta.main_ctx = SDL_GL_CreateContext(meta.window);
+  meta.ffi_ctx  = SDL_GL_CreateContext(meta.window);
+
+  // Main thread keeps main_ctx current — ffi thread will claim ffi_ctx
+  SDL_GL_MakeCurrent(meta.window, meta.main_ctx);
   gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress);
 
-  meta.nvg_ctx      = nvgCreateGL3(NVG_ANTIALIAS | NVG_STENCIL_STROKES);
-  meta.canvas_layer = nvgluCreateFramebuffer(meta.nvg_ctx, width, height, 0);
+  // Main thread only needs NVG for compositing — no stencil strokes needed
+  meta.main_nvg = nvgCreateGL3(NVG_ANTIALIAS);
+  // canvas_layer must be created in the main thread so it can composite it
+  meta.canvas_layer = nvgluCreateFramebuffer(meta.main_nvg, width, height, 0);
 
-  init_commands();
+  // Spawn FFI thread — wait for it to finish GL+NVG init before returning
+  std::promise<NVGcontext*> ready;
+  auto future     = ready.get_future();
+  meta.ffi_thread = std::thread(ffi_thread_func, std::move(ready));
 
-  return meta.nvg_ctx;
+  // Block until FFI thread has created its NVG context
+  future.wait();
+
+  return meta.ffi_nvg;
 }
 
-void start_main_loop(void (*render_callback)()) {
-  int width                      = meta.width;
-  int height                     = meta.height;
-  SDL_Window* window             = meta.window;
-  NVGcontext* ctx                = meta.nvg_ctx;
-  NVGLUframebuffer* canvas_layer = meta.canvas_layer;
+void start_main_loop(void (*frame_callback)()) {
+  int width          = meta.width;
+  int height         = meta.height;
+  SDL_Window* window = meta.window;
 
   bool quit = false;
   SDL_Event ev;
@@ -65,45 +128,42 @@ void start_main_loop(void (*render_callback)()) {
       }
     }
 
-    // --- JS batch pass (offscreen, persistent) ---
-    auto batch = get_batch();
-    if (!batch.cmds.empty()) {
-      nvgluBindFramebuffer(canvas_layer);
-      glViewport(0, 0, width, height);
-      nvgBeginFrame(ctx, width, height, 1.0f);
-      glEnable(GL_BLEND);
-      glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-      execute_batch(ctx, batch);
-      nvgEndFrame(ctx);
-    }
-
-    // --- main screen pass (always runs) ---
+    // --- Composite pass ---
     nvgluBindFramebuffer(NULL);
     glViewport(0, 0, width, height);
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-    nvgBeginFrame(ctx, width, height, 1.0f);
+    nvgBeginFrame(meta.main_nvg, width, height, 1.0f);
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 
-    auto canvas_frame =
-        nvgImagePattern(ctx, 0, 0, width, height, 0, canvas_layer->image, 1.0f);
-    nvgBeginPath(ctx);
-    nvgRect(ctx, 0, 0, width, height);
-    nvgFillPaint(ctx, canvas_frame);
-    nvgFill(ctx);
-    render_callback();
-    nvgEndFrame(ctx);
+    auto canvas_frame = nvgImagePattern(meta.main_nvg, 0, 0, width, height, 0,
+                                        meta.canvas_layer->image, 1.0f);
+    nvgBeginPath(meta.main_nvg);
+    nvgRect(meta.main_nvg, 0, 0, width, height);
+    nvgFillPaint(meta.main_nvg, canvas_frame);
+    nvgFill(meta.main_nvg);
+    nvgEndFrame(meta.main_nvg);
 
     SDL_GL_SwapWindow(window);
+
+    // Signal worker — JS writes timestamp + increments SAB counter
+    frame_callback();
   }
 
-  nvgluDeleteFramebuffer(canvas_layer);
-  nvgDeleteGL3(ctx);
+  // Signal FFI thread to stop, wake it if waiting, then join
+  ffi_running = false;
+  batch_cv.notify_one();
+  meta.ffi_thread.join();
 
-  SDL_GL_DestroyContext(meta.gl_ctx);
+  // Cleanup
+  nvgluDeleteFramebuffer(meta.canvas_layer);
+  nvgDeleteGL3(meta.ffi_nvg);
+  nvgDeleteGL3(meta.main_nvg);
+  SDL_GL_DestroyContext(meta.ffi_ctx);
+  SDL_GL_DestroyContext(meta.main_ctx);
   SDL_DestroyWindow(window);
   SDL_Quit();
 }

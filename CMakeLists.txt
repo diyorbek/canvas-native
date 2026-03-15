@@ -50,6 +50,7 @@ set(COMMON_INCLUDES
 # app executable
 add_executable(${PROJECT_NAME} 
     native/main.cpp
+    # native/test_multithread.cpp
     native/utils.cpp
     native/nvg/image.cpp
     native/nvg/rect.cpp

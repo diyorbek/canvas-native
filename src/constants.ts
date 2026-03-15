@@ -1,7 +1,11 @@
-import { RGBAColor } from "./types.ts";
+import { RGBAColor } from './types.ts';
 
 export const DEFAULT_FONT_PATH =
-  Deno.build.os === "darwin" ? "/System/Library/Fonts/Helvetica.ttc" : "";
+  Deno.build.os === 'darwin' ? '/System/Library/Fonts/Helvetica.ttc' : '';
+
+export enum MessageType {
+  INIT,
+}
 
 export const NAMED_COLORS_MAP: Record<string, RGBAColor> = {
   aliceblue: [240, 248, 255, 255],

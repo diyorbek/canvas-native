@@ -5,8 +5,8 @@ export class CommandBuffer {
   private static strBuffer = new Uint8Array(2 ** 16);
   private static cmdHead = 0;
   private static strHead = 0;
-  private static scheduled = false;
-  private static encoder = new TextEncoder(); // UTF-8 by default
+  private static dirty = false;
+  private static encoder = new TextEncoder();
 
   static write(value: string): void;
   static write(value: number): void;
@@ -32,14 +32,13 @@ export class CommandBuffer {
     return offset;
   }
 
-  static schedule() {
-    if (this.scheduled) return;
-    this.scheduled = true;
-    Promise.resolve().then(() => this.flush());
+  static schedule(): void {
+    this.dirty = true;
   }
 
-  static flush() {
-    if (this.cmdHead === 0) return;
+  static flush(): void {
+    if (!this.dirty || this.cmdHead === 0) return;
+
     ffi.symbols.submit_batch(
       this.cmdBuffer,
       this.cmdHead,
@@ -49,10 +48,10 @@ export class CommandBuffer {
     this.reset();
   }
 
-  static reset() {
+  static reset(): void {
     this.cmdHead = 0;
     this.strHead = 0;
-    this.scheduled = false;
+    this.dirty = false;
   }
 }
 

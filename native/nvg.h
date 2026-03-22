@@ -102,7 +102,7 @@ void stroke(NVGcontext* ctx, const float*, const uint8_t*) {
 }
 
 void stroke_color(NVGcontext* ctx, const float* args, const uint8_t*) {
-  nvgStrokeColor(ctx, nvgRGBAf(args[0], args[1], args[2], args[3]));
+  nvgStrokeColor(ctx, nvgRGBA(args[0], args[1], args[2], args[3]));
 }
 
 void stroke_width(NVGcontext* ctx, const float* args, const uint8_t*) {

@@ -5,8 +5,8 @@
 
 #include "stb_image.h"
 
-static int LoadNvgImageFromPixels(NVGcontext* ctx, unsigned char* data,
-                                  int width, int height, int imageFlags) {
+int LoadNvgImageFromPixels(NVGcontext* ctx, unsigned char* data, int width,
+                           int height, int imageFlags) {
   int handle = nvgCreateImageRGBA(ctx, width, height, imageFlags, data);
   return handle;
 }
@@ -67,4 +67,25 @@ int nvgGetImageHandleFromMemory(NVGcontext* ctx, const char* fileType,
                                 const unsigned char* fileData, int dataSize,
                                 int imageFlags) {
   return LoadImageFromBuffer(ctx, fileType, fileData, dataSize, imageFlags);
+}
+
+void nvg::draw_image(NVGcontext* ctx, const float* args, const uint8_t*) {
+  nvgDrawImage(ctx, args[0], args[1], args[2], args[3], args[4]);
+}
+
+void nvg::draw_image_with_deafult_size(NVGcontext* ctx, const float* args,
+                                       const uint8_t*) {
+  nvgDrawImageWithDeafultSize(ctx, args[0], args[1], args[2]);
+}
+
+int nvg::get_image_handle_from_path(NVGcontext* ctx, const char* file_path,
+                                    int image_flags) {
+  return nvgGetImageHandleFromPath(ctx, file_path, image_flags);
+}
+
+int nvg::get_image_handle_from_memory(NVGcontext* ctx, const char* file_type,
+                                      const unsigned char* file_data,
+                                      int data_size, int image_flags) {
+  return nvgGetImageHandleFromMemory(ctx, file_type, file_data, data_size,
+                                     image_flags);
 }

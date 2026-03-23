@@ -80,5 +80,10 @@ export const ffi = Deno.dlopen('./build/libcanvasnative.dylib', {
     parameters: ['buffer', 'i32', 'buffer', 'i32'],
     result: 'void',
   },
+
+  return_call: {
+    parameters: ['i32', 'buffer', 'buffer', 'u32', 'u32'],
+    result: 'i32',
+  },
   // #endregion
 } as const);

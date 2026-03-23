@@ -16,6 +16,7 @@
 
 // Local headers
 #include "bridge.h"
+#include "bridge/return_call.h"
 
 struct Meta {
   int width;
@@ -54,10 +55,16 @@ void ffi_thread_func(std::promise<NVGcontext*> ready) {
   while (true) {
     {
       std::unique_lock<std::mutex> lock(batch_mtx);
-      batch_cv.wait(lock, [] { return !_cmds.empty() || !ffi_running; });
+      batch_cv.wait(lock, [] {
+        return !_cmds.empty() || _return_pending || !ffi_running;
+      });
     }  // release lock before get_batch acquires it
 
     if (!ffi_running) break;
+
+    if (_return_pending) process_return_call(meta.ffi_nvg);
+
+    if (_cmds.empty()) continue;
 
     auto batch = get_batch();
 

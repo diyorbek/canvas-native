@@ -3,6 +3,7 @@
 #include <cstdint>
 
 #include "nvg.h"
+#include "nvg/image.h"
 #include "nvg/rect.h"
 #include "nvg/text.h"
 
@@ -83,4 +84,7 @@ void init_commands() {
   // Custom commands
   nvg_dispatcher[CLEAR_RECT] = nvg::clear_rect;
   nvg_dispatcher[TEXT]       = nvg::text;
+  nvg_dispatcher[DRAW_IMAGE] = nvg::draw_image;
+  nvg_dispatcher[DRAW_IMAGE_WITH_DEAFULT_SIZE] =
+      nvg::draw_image_with_deafult_size;
 }

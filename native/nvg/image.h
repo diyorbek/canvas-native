@@ -1,3 +1,7 @@
+#pragma once
+
+#include <cstdint>
+
 #include "nanovg.h"
 
 extern "C" {
@@ -14,3 +18,17 @@ int nvgGetImageHandleFromMemory(NVGcontext* ctx, const char* fileType,
                                 const unsigned char* fileData, int dataSize,
                                 int imageFlags);
 }
+
+namespace nvg {
+void draw_image(NVGcontext* ctx, const float* args, const uint8_t*);
+
+void draw_image_with_deafult_size(NVGcontext* ctx, const float* args,
+                                  const uint8_t*);
+
+int get_image_handle_from_path(NVGcontext* ctx, const char* file_path,
+                               int image_flags);
+
+int get_image_handle_from_memory(NVGcontext* ctx, const char* file_type,
+                                 const unsigned char* file_data, int data_size,
+                                 int image_flags);
+}  // namespace nvg

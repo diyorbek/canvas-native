@@ -13,8 +13,6 @@ let tsView: Float64Array;
 
 self.addEventListener('message', (e) => {
   if (e.data?.type === MessageType.INIT) {
-    console.log('worker got message');
-
     self.postMessage({ type: MessageType.INIT });
 
     const sab = e.data.sab as SharedArrayBuffer;

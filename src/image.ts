@@ -1,7 +1,10 @@
-import { ffi } from "./ffi.ts";
-import { imageBufferFromDataUrl, isFileUrl, stringToBuffer } from "./utils.ts";
+import { ffi } from './ffi.ts';
+import { imageBufferFromDataUrl, isFileUrl, stringToBuffer } from './utils.ts';
 
 export type ImageSource = Uint8Array | string;
+
+// Reusable buffer for image_info calls — out[0] = width, out[1] = height
+const infoBuffer = new Int32Array(2);
 
 export class Image {
   #isLocalFile: boolean = false;
@@ -16,18 +19,17 @@ export class Image {
   constructor(source: ImageSource, imageType?: string) {
     this.#src = source;
 
-    if (typeof source === "string" && isFileUrl(source)) {
+    if (typeof source === 'string' && isFileUrl(source)) {
       this.#isLocalFile = true;
-    } else if (typeof source === "string") {
+    } else if (typeof source === 'string') {
       const { buffer, mimeType } = imageBufferFromDataUrl(source);
-      const fileType = mimeType.split("/")[1];
       this.#data = buffer;
-      this.#fileType = fileType;
+      this.#fileType = mimeType.split('/')[1];
     } else if (source instanceof Uint8Array && imageType) {
       this.#data = source;
       this.#fileType = imageType;
     } else {
-      throw new Error("Cannot load the image!");
+      throw new Error('Cannot load the image!');
     }
   }
 
@@ -48,79 +50,27 @@ export class Image {
   }
 
   get width(): number {
-    this.#loadImageDimentions();
-    return this.#width as number;
+    this.#loadInfo();
+    return this.#width!;
   }
 
   get height(): number {
-    this.#loadImageDimentions();
-    return this.#height as number;
+    this.#loadInfo();
+    return this.#height!;
   }
 
-  #loadImageDimentions() {
-    if (
-      typeof this.#width !== "undefined" &&
-      typeof this.#height !== "undefined"
-    ) {
-      return;
-    }
+  #loadInfo() {
+    if (this.#width !== null) return;
 
-    if (typeof this.#src === "string" && this.#isLocalFile) {
-      const image = loadImage(this.#src);
-
-      this.#width = image.width;
-      this.#height = image.height;
-    } else if (this.#data instanceof Uint8Array && this.#fileType) {
-      const image = loadImageFromMemory(this.#fileType, this.#data);
-
-      this.#width = image.width;
-      this.#height = image.height;
+    if (this.#isLocalFile && typeof this.#src === 'string') {
+      ffi.symbols.image_info(stringToBuffer(this.#src), infoBuffer);
+    } else if (this.#data) {
+      ffi.symbols.image_info_from_memory(this.#data.buffer as ArrayBuffer, this.#data.byteLength, infoBuffer);
     } else {
-      throw new Error("Cannot get dimensions for the image!");
+      throw new Error('Cannot get image dimensions!');
     }
+
+    this.#width = infoBuffer[0];
+    this.#height = infoBuffer[1];
   }
-
-  [Symbol.for("Deno.customInspect")](): string {
-    return `Image { width: ${this.width}, height: ${this.height}, src: ${typeof this.src === "string" ? this.src : this.src.length} }`;
-  }
-}
-
-function parseImageStruct(struct: Uint8Array) {
-  const resultPointer = Deno.UnsafePointer.of(struct);
-
-  if (!resultPointer) {
-    throw new Error("Failed to get pointer for image result!");
-  }
-
-  const view = new Deno.UnsafePointerView(resultPointer);
-
-  const data = view.getPointer(0);
-  const width = view.getInt32(8);
-  const height = view.getInt32(12);
-  const mipmaps = view.getInt32(16);
-  const format = view.getInt32(20);
-
-  return { data, width, height, mipmaps, format };
-}
-
-function loadImage(path: string) {
-  const struct = ffi.symbols.LoadImage(stringToBuffer(path));
-  const parsed = parseImageStruct(struct);
-
-  ffi.symbols.UnloadImage(struct);
-
-  return parsed;
-}
-
-function loadImageFromMemory(fileType: string, data: Uint8Array) {
-  const struct = ffi.symbols.LoadImageFromMemory(
-    stringToBuffer(fileType),
-    data,
-    data.byteLength,
-  );
-  const parsed = parseImageStruct(struct);
-
-  ffi.symbols.UnloadImage(struct);
-
-  return parsed;
 }

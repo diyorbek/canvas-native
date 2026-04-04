@@ -1,7 +1,6 @@
 /// <reference lib="deno.ns" />
 
 import { MessageType } from './src/constants.ts';
-import { RenderingContext2D } from './src/context2d.ts';
 import { ffi } from './src/ffi.ts';
 import { stringToBuffer } from './src/utils.ts';
 
@@ -23,7 +22,6 @@ async function spawnWorker(path: string) {
   // Transfer SAB to worker before it starts waiting
   worker.postMessage({ type: MessageType.INIT, sab });
   worker.addEventListener('message', (e) => {
-    // console.log(e.data);
     workerSignal.resolve(e.data);
   });
 
@@ -38,12 +36,7 @@ export async function createWindow(
   title: string,
   workerPath: string = './worker.ts',
 ) {
-  const nativeCtx = ffi.symbols.create_window(
-    width,
-    height,
-    stringToBuffer(title),
-  );
-  const ctx = new RenderingContext2D(nativeCtx);
+  ffi.symbols.create_window(width, height, stringToBuffer(title));
 
   const worker = await spawnWorker(workerPath);
 
@@ -57,15 +50,22 @@ export async function createWindow(
           tsView[0] = performance.now();
           Atomics.add(counterView, 0, 1);
           Atomics.notify(counterView, 0, 1);
+
+          // Atomics.waitAsync promises do not resolve when Atomics.notify is called,
+          // if the event loop has no other pending tasks.
+          // This is a known issue (github.com/denoland/deno/issues/14786) dating back to 2022.
+          // Workaround: Ping the worker each frame. This keeps the event loop alive,
+          // giving the pending waitAsync promise a chance to resolve.
           worker.postMessage('ping');
         },
       );
 
-      ffi.symbols.start_main_loop(frameCallback.pointer);
-      Promise.resolve().then(() => {
+      try {
+        ffi.symbols.start_main_loop(frameCallback.pointer);
+      } finally {
         worker.terminate();
         frameCallback.close();
-      });
+      }
     },
   };
 }

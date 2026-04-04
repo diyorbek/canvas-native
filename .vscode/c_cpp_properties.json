@@ -4,7 +4,6 @@
       "name": "Mac",
       "includePath": [
         "${workspaceFolder}/**",
-        "${workspaceFolder}/build/_deps/raylib-build/raylib/include",
         "${workspaceFolder}/build/_deps/nanovg-src/src"
       ],
       "defines": ["NANOVG_GL3_IMPLEMENTATION"],

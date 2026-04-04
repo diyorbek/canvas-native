@@ -1,13 +1,6 @@
-#include <glad/glad.h>
-///
-
-#include <SDL3/SDL.h>
-#include <SDL3/SDL_opengl.h>
 #include <stdio.h>
 
-#include "nanovg.h"
-#include "nanovg_gl.h"
-#include "nanovg_gl_utils.h"
+#include "sdl3_nvg_setup.h"
 
 int main(int argc, char* argv[]) {
   SDL_Init(SDL_INIT_VIDEO);

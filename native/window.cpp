@@ -7,6 +7,7 @@
 #include "sdl3_nvg_setup.h"
 
 // Local headers
+#include "meta.h"
 #include "dispatcher/dispatcher.h"
 #include "dispatcher/sync.h"
 

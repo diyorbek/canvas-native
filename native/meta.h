@@ -1,10 +1,13 @@
 #pragma once
 
 #include <atomic>
-#include <future>
 #include <thread>
 
-#include "sdl3_nvg_setup.h"
+// Forward declarations — avoids pulling nanovg_gl.h implementation into every TU
+struct SDL_Window;
+typedef struct SDL_GLContextState *SDL_GLContext;
+typedef struct NVGcontext NVGcontext;
+typedef struct NVGLUframebuffer NVGLUframebuffer;
 
 struct Meta {
   int width;
@@ -16,6 +19,7 @@ struct Meta {
   NVGcontext* dispatcher_nvg;      // FFI thread — returned to JS worker
   NVGLUframebuffer* canvas_layer;  // main_nvg owned, FFI thread rendered
   std::thread dispatcher_thread;
-} meta;
+};
 
-std::atomic<bool> dispatcher_running{true};
+extern Meta meta;
+extern std::atomic<bool> dispatcher_running;

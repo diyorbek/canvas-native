@@ -39,7 +39,7 @@ FetchContent_MakeAvailable(nanovg)
 set(NANOVG_SRC ${nanovg_SOURCE_DIR}/src/nanovg.c)
 add_library(nanovg ${NANOVG_SRC})
 target_include_directories(nanovg PUBLIC ${nanovg_SOURCE_DIR}/src)
-target_compile_definitions(nanovg PUBLIC NANOVG_GL3_IMPLEMENTATION NVG_NO_STB)
+target_compile_definitions(nanovg PUBLIC NVG_NO_STB NANOVG_GL3)
 target_compile_options(nanovg PUBLIC -fvisibility=default)
 
 # Common includes for all targets
@@ -48,9 +48,11 @@ set(COMMON_INCLUDES
 )
 
 # app executable
-add_executable(${PROJECT_NAME} 
+add_executable(${PROJECT_NAME}
     native/main.cpp
     # native/test_multithread.cpp
+    native/meta.cpp
+    native/nvg_gl_impl.cpp
     native/utils.cpp
     native/nvg/image.cpp
     native/nvg/rect.cpp
@@ -63,11 +65,15 @@ target_link_libraries(${PROJECT_NAME} SDL3::SDL3 glad nanovg)
 set(LIBRARY_NAME canvasnative)
 add_library(${LIBRARY_NAME} SHARED
     native/lib.cpp
+    native/meta.cpp
+    native/nvg_gl_impl.cpp
     native/utils.cpp
     native/window.cpp
     native/nvg/image.cpp
     native/nvg/rect.cpp
     native/nvg/text.cpp
+    native/dispatcher/dispatcher.cpp
+    native/dispatcher/sync.cpp
 )
 target_include_directories(${LIBRARY_NAME} PRIVATE ${COMMON_INCLUDES})
 target_link_libraries(${LIBRARY_NAME} SDL3::SDL3 glad nanovg)

@@ -63,6 +63,7 @@ add_library(${LIBRARY_NAME} SHARED
     native/nvg_gl_impl.cpp
     native/utils.cpp
     native/window.cpp
+    native/nvg/font.cpp
     native/nvg/image.cpp
     native/nvg/rect.cpp
     native/nvg/text.cpp
@@ -70,6 +71,7 @@ add_library(${LIBRARY_NAME} SHARED
     native/dispatcher/draw_batch.cpp
     native/dispatcher/draw_commands.cpp
     native/dispatcher/sync_call.cpp
+    native/dispatcher/sync_commands.cpp
     native/dispatcher/dispatcher_sync.cpp
 )
 target_include_directories(${LIBRARY_NAME} PRIVATE ${COMMON_INCLUDES})

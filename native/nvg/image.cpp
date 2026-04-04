@@ -69,6 +69,14 @@ int nvgGetImageHandleFromMemory(NVGcontext* ctx, const char* fileType,
   return LoadImageFromBuffer(ctx, fileType, fileData, dataSize, imageFlags);
 }
 
+int nvg::create_image(NVGcontext* ctx, const float* args, const uint8_t* strs,
+                      const uint32_t arg_count, const uint32_t str_len) {
+  const int path_offset = static_cast<int>(args[0]);
+  const int image_flags = static_cast<int>(args[1]);
+  const char* path      = reinterpret_cast<const char*>(strs + path_offset);
+  return nvg::get_image_handle_from_path(ctx, path, image_flags);
+}
+
 void nvg::draw_image(NVGcontext* ctx, const float* args, const uint8_t*) {
   nvgDrawImage(ctx, args[0], args[1], args[2], args[3], args[4]);
 }

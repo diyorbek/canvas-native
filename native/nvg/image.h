@@ -20,6 +20,9 @@ int nvgGetImageHandleFromMemory(NVGcontext* ctx, const char* fileType,
 }
 
 namespace nvg {
+int create_image(NVGcontext* ctx, const float* args, const uint8_t* strs,
+                 const uint32_t arg_count, const uint32_t str_len);
+
 void draw_image(NVGcontext* ctx, const float* args, const uint8_t*);
 
 void draw_image_with_deafult_size(NVGcontext* ctx, const float* args,

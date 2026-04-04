@@ -1,11 +1,12 @@
 #include "dispatcher.h"
 
-#include "../window_state.h"
 #include "../sdl3_nvg_setup.h"
+#include "../window_state.h"
+#include "dispatcher_sync.h"
 #include "draw_batch.h"
 #include "draw_commands.h"
 #include "sync_call.h"
-#include "dispatcher_sync.h"
+#include "sync_commands.h"
 
 // --- Dispatcher thread ---
 // Owns the NVG context
@@ -17,9 +18,11 @@ void dispatcher_main(std::promise<NVGcontext*> ready) {
   // Dispatcher thread needs its own glad bindings
   gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress);
 
-  window_state.dispatcher_nvg = nvgCreateGL3(NVG_ANTIALIAS | NVG_STENCIL_STROKES);
+  window_state.dispatcher_nvg =
+      nvgCreateGL3(NVG_ANTIALIAS | NVG_STENCIL_STROKES);
 
   init_draw_commands();
+  init_sync_commands();
 
   // dispatcher_nvg is ready — main thread can proceed
   ready.set_value(window_state.dispatcher_nvg);
@@ -29,8 +32,7 @@ void dispatcher_main(std::promise<NVGcontext*> ready) {
     {
       std::unique_lock<std::mutex> lock(draw_batch_mtx);
       dispatcher_cv.wait(lock, [] {
-        return draw_call_pending || sync_call_pending ||
-               !dispatcher_running;
+        return draw_call_pending || sync_call_pending || !dispatcher_running;
       });
     }  // release lock before get_batch acquires it
 
@@ -47,7 +49,8 @@ void flush_batch() {
 
   nvgluBindFramebuffer(window_state.canvas_layer);
   glViewport(0, 0, window_state.width, window_state.height);
-  nvgBeginFrame(window_state.dispatcher_nvg, window_state.width, window_state.height, 1.0f);
+  nvgBeginFrame(window_state.dispatcher_nvg, window_state.width,
+                window_state.height, 1.0f);
   glEnable(GL_BLEND);
   glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
   execute_batch(window_state.dispatcher_nvg, batch);

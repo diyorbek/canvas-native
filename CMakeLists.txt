@@ -47,16 +47,10 @@ set(COMMON_INCLUDES
     ${stb_SOURCE_DIR}
 )
 
-# app executable
+# debug app executable
 add_executable(${PROJECT_NAME}
-    native/main.cpp
-    # native/test_multithread.cpp
-    native/meta.cpp
+    native/debug/main.cpp
     native/nvg_gl_impl.cpp
-    native/utils.cpp
-    native/nvg/image.cpp
-    native/nvg/rect.cpp
-    native/nvg/text.cpp
 )
 target_include_directories(${PROJECT_NAME} PRIVATE ${COMMON_INCLUDES})
 target_link_libraries(${PROJECT_NAME} SDL3::SDL3 glad nanovg)

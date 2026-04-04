@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-#include "sdl3_nvg_setup.h"
+#include "../sdl3_nvg_setup.h"
 
 int main(int argc, char* argv[]) {
   SDL_Init(SDL_INIT_VIDEO);

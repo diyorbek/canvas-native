@@ -1,4 +1,4 @@
-import { decodeBase64 } from 'jsr:@std/encoding/base64';
+import { decodeBase64 } from 'jsr:@std/encoding@1.0.10/base64';
 import { NAMED_COLORS_MAP } from './constants.ts';
 import { RGBAColor } from './types.ts';
 
@@ -8,6 +8,21 @@ export function stringToBuffer(text: string): BufferSource {
 
 export function parseColorString(str: string): RGBAColor {
   str = str.trim().toLowerCase();
+
+  if (str.startsWith('#')) {
+    let hex = str.slice(1);
+    if (hex.length === 3 || hex.length === 4) {
+      hex = hex
+        .split('')
+        .map((c) => c + c)
+        .join('');
+    }
+    const r = parseInt(hex.slice(0, 2), 16);
+    const g = parseInt(hex.slice(2, 4), 16);
+    const b = parseInt(hex.slice(4, 6), 16);
+    const a = hex.length === 8 ? parseInt(hex.slice(6, 8), 16) : 255;
+    return [r, g, b, a];
+  }
 
   if (str.at(-1) === ')') {
     const [r, g, b, a] = str

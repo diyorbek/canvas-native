@@ -1,5 +1,5 @@
-import { symbolsMeta } from './generateSymbols.ts';
-import { NANOVG_SYMBOLS } from './nanovgSymbols.ts';
+// deno-lint-ignore-file no-explicit-any
+import { symbols, symbolsMeta } from './generateSymbols.ts';
 
 const WHITELIST = [
   'nvgArc',
@@ -54,11 +54,9 @@ const cppFunctions: string[] = [];
 
 // let a = 0;
 
-Object.entries({
-  ...NANOVG_SYMBOLS,
-  // ...NANOVG_EXTENDED_SYMBOLS,
-})
+Object.entries(symbols)
   .toSorted()
+  // @ts-expect-error - parameters is not typed, but we know it's there from generateSymbols.ts
   .forEach(([name, { parameters }]) => {
     // if (parameters[0] === 'pointer' && result !== 'void') {
     //   console.log(name, typeof result);
@@ -79,11 +77,11 @@ Object.entries({
       let paramsCount = 0;
       const params = parameters
         .slice(1)
-        .map((p, i) => {
+        .map((p: any, i: number) => {
           const argName = symbolsMeta[name]?.parameterNames[i + 1] || `arg${i}`;
           if (typeof p === 'object') {
             const structAsParams = p.struct.map(
-              (s, j) =>
+              (s: string, j: number) =>
                 `${argName}_${j}: ${TYPES[s as keyof typeof TYPES] || 'unknown'}`,
             );
 
@@ -104,14 +102,14 @@ Object.entries({
   ${params
     .split(', ')
     .filter(Boolean)
-    .map((p) => `CommandBuffer.write(${p.split(':')[0]});`)
+    .map((p: string) => `CommandBuffer.write(${p.split(':')[0]});`)
     .concat(['CommandBuffer.schedule();'])
     .join('\n  ')}
 }`;
       let argsIndex = 0;
       const cppFuncArgs = parameters
         .slice(1)
-        .map((p) => {
+        .map((p: { struct: any[] }) => {
           if (typeof p === 'object') {
             const structArgs = p.struct
               .map(() => {
@@ -120,7 +118,7 @@ Object.entries({
               .join(', ');
 
             // Assuming the struct is always NVGcolor for now
-            return `nvgRGBAf(${structArgs})`;
+            return `nvgRGBA(${structArgs})`;
           }
 
           return `args[${argsIndex++}]`;
@@ -158,7 +156,7 @@ Deno.spawn('deno', ['fmt', import.meta.dirname + '/nanoVGBridge.ts']);
 
 const cppContent = cppFunctions.filter(Boolean).join('\n\n');
 Deno.writeTextFileSync(
-  import.meta.dirname + '/../native/nvg.h',
+  import.meta.dirname + '/../native/nvg/nvg.h',
   `// !!! DO NOT EDIT !!! AUTO GENERATED !!!
 // clang-format off
 #pragma once

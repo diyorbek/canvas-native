@@ -14,10 +14,11 @@ static bool sync_call_result_ready     = false;
 // Blocks until dispatcher thread writes result.
 // Caller's buffers stay valid because this function blocks until completion.
 extern "C" SyncCallResult sync_call(int32_t opcode, float* args, uint8_t* strs,
-                                    uint32_t arg_count, uint32_t str_len) {
+                                    uint32_t arg_count, uint32_t str_len,
+                                    uint8_t* data, uint32_t data_len) {
   {
     std::lock_guard<std::mutex> lock(sync_call_mtx);
-    sync_request           = {opcode, args, strs, arg_count, str_len};
+    sync_request = {opcode, args, strs, arg_count, str_len, data, data_len};
     sync_call_pending      = true;
     sync_call_result_ready = false;
   }
@@ -43,7 +44,8 @@ bool process_sync_call(NVGcontext* ctx) {
 
   auto command     = sync_cmds_map[sync_request.opcode];
   sync_call_result = command(ctx, sync_request.args, sync_request.strs,
-                             sync_request.arg_count, sync_request.str_len);
+                             sync_request.arg_count, sync_request.str_len,
+                             sync_request.data, sync_request.data_len);
 
   {
     std::lock_guard<std::mutex> lock(sync_call_mtx);

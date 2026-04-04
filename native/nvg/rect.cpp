@@ -1,7 +1,6 @@
 #include "rect.h"
 
-/** Attempt to imitate HTML5 Canvas's clearRect() as NanoVG doesn't have it. */
-void nvgClearRect(NVGcontext* ctx, float x, float y, float w, float h) {
+static void nvgClearRect(NVGcontext* ctx, float x, float y, float w, float h) {
   nvgSave(ctx);
 
   // NVG_COPY makes new pixels replace exisitng ones

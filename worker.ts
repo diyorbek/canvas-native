@@ -1,30 +1,26 @@
-import { Bridge } from './src/bridge.ts';
-import { DEFAULT_FONT_PATH } from './src/constants.ts';
 import { requestAnimationFrame } from './src/frameLoop.ts';
-import { nvgCreateFont, nvgCreateImage } from './src/returnCall.ts';
-requestAnimationFrame;
+import { Image } from './src/image.ts';
+import { RenderingContext2D } from './src/renderingContext2d.ts';
 
-Bridge.nvgFillColor(10, 25, 130, 255);
-Bridge.nvgFontSize(30);
-Bridge.nvgText(350, 80, 'Hello, Canvas Native!');
+const ctx = new RenderingContext2D();
+const img = new Image('./img.png');
 
-const font = nvgCreateFont('Helb', DEFAULT_FONT_PATH);
-const imageHandle = nvgCreateImage('./img.png', 0);
-console.log({ font, imageHandle });
+ctx.fillStyle = 'rgb(10, 25, 130)';
+ctx.font = '30px sans-serif';
+ctx.fillText('Hello, Canvas Native!', 350, 80);
 
 let x = 0;
 let y = 0;
 let dirX = 1;
 let dirY = 1;
+
 function draw() {
-  Bridge.nvgClearRect(0, 0, 800, 500);
+  ctx.clearRect(0, 0, 800, 500);
 
-  Bridge.nvgDrawImage(imageHandle, x + 10, y + 10, 200, 100);
+  ctx.drawImage(img, x + 10, y + 10, 200, 100);
 
-  Bridge.nvgFillColor(10, 50, 30, 255);
-  Bridge.nvgBeginPath();
-  Bridge.nvgRect(x, y, 100, 100);
-  Bridge.nvgFill();
+  ctx.fillStyle = 'rgb(10, 50, 30)';
+  ctx.fillRect(x, y, 100, 100);
 
   if (y <= 0) dirY = 1;
   else if (y > 500 - 100) dirY = -1;
@@ -35,21 +31,6 @@ function draw() {
   x += 0.1 * dirX;
   y += 0.1 * dirY;
 
-  // console.log('draw');
-
   requestAnimationFrame(draw);
 }
 draw();
-
-// setInterval(() => {
-//   Bridge.nvgClearRect(0, 0, 800, 500);
-//   Bridge.nvgFillColor(110, 25, 130, 255);
-//   // Bridge.nvgFillColor(10, 0, 130, 255);
-//   Bridge.nvgFontSize(30);
-//   Bridge.nvgText(50, 80, 'Hello, Canvas Native!');
-//   Bridge.nvgBeginPath();
-//   Bridge.nvgRect(100, i, 100, 100);
-//   Bridge.nvgFill();
-//   i += 0.02;
-//   console.log('set interval');
-// }, 0);

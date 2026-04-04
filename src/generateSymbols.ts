@@ -1,7 +1,22 @@
 // deno-lint-ignore-file no-explicit-any
-import { STRUCT_NVGcolor, STRUCT_NVGpaint } from './structs.ts';
 
-const symbols: Deno.ForeignLibraryInterface = {};
+const STRUCT_NVGcolor: Deno.NativeStructType = {
+  struct: ['f32', 'f32', 'f32', 'f32'],
+};
+
+const STRUCT_NVGpaint = {
+  struct: [
+    ...['f32', 'f32', 'f32', 'f32', 'f32', 'f32'], // xform[6]
+    ...['f32', 'f32'], // extent[2]
+    'f32', // radius
+    'f32', // feather
+    STRUCT_NVGcolor, // innerColor
+    STRUCT_NVGcolor, // outerColor
+    'i32', // image
+  ],
+};
+
+export const symbols: Deno.ForeignLibraryInterface = {};
 export const symbolsMeta: Record<string, { parameterNames: string[] }> = {};
 
 const conversionTable: Record<string, any> = {

@@ -4,13 +4,14 @@
 #include <cstring>
 #include <mutex>
 
-#include "../bridge.h"  // for batch_cv — return_call reuses it to wake FFI thread
-#include "../nvg/image.h"
 #include "nanovg.h"
+
+// Local headers
+#include "../nvg/image.h"
 #include "sync.h"
 
-// --- Return-value calls (worker → FFI thread, returns int32) ---
-// Worker calls return_call() which blocks until the FFI thread
+// --- Return-value calls (worker → dispatcher thread, returns int32) ---
+// Worker calls return_call() which blocks until the dispatcher thread
 // processes the request and writes the result back.
 //
 // Only one call in flight at a time — JS is single-threaded so this is safe.
@@ -26,18 +27,19 @@ struct ReturnRequest {
   uint8_t strs[1024];  // null-terminated strings packed sequentially
 };
 
-static ReturnRequest _return_request;
-static int32_t _return_result = 0;
-// static bool _return_pending   = false;
-static bool _return_ready = false;
-static std::mutex return_mtx;
-static std::condition_variable return_cv;
+ReturnRequest _return_request;
+std::mutex return_call_mtx;
+std::condition_variable return_call_cv;
 
-// Called by worker thread — blocks until FFI thread writes result
+int32_t _return_result = 0;
+bool _return_ready     = false;
+
+// Called by JS worker thread.
+// Blocks until dispatcher thread writes result.
 extern "C" int32_t return_call(int32_t opcode, float* args, uint8_t* strs,
                                uint32_t arg_count, uint32_t str_len) {
   {
-    std::lock_guard<std::mutex> lock(return_mtx);
+    std::lock_guard<std::mutex> lock(return_call_mtx);
     _return_request.opcode = static_cast<ReturnCommand>(opcode);
     if (args && arg_count) {
       std::memcpy(_return_request.args, args, arg_count * sizeof(float));
@@ -45,24 +47,27 @@ extern "C" int32_t return_call(int32_t opcode, float* args, uint8_t* strs,
     if (strs && str_len) {
       std::memcpy(_return_request.strs, strs, str_len);
     }
-    _return_pending = true;
-    _return_ready   = false;
+    _return_call_pending = true;
+    _return_ready        = false;
   }
-  batch_cv.notify_one();  // reuse batch_cv — FFI thread checks both queues
 
-  // Block until FFI thread writes result
-  std::unique_lock<std::mutex> lock(return_mtx);
-  return_cv.wait(lock, [] { return _return_ready; });
+  bridge_cv.notify_one();  // wake/notify dispatcher thread
+
+  // Block until dispatcher thread writes result
+  std::unique_lock<std::mutex> lock(return_call_mtx);
+  return_call_cv.wait(lock, [] { return _return_ready; });
   _return_ready = false;
+
   return _return_result;
 }
 
-// Called by FFI thread each wake cycle — executes pending request if any
+// Called by dispatcher thread on each wake cycle.
+// Executes pending request if any.
 bool process_return_call(NVGcontext* ctx) {
   {
-    std::unique_lock<std::mutex> lock(return_mtx);
-    if (!_return_pending) return false;
-    _return_pending = false;
+    std::unique_lock<std::mutex> lock(return_call_mtx);
+    if (!_return_call_pending) return false;
+    _return_call_pending = false;
   }
 
   const auto& req  = _return_request;
@@ -87,9 +92,10 @@ bool process_return_call(NVGcontext* ctx) {
   }
 
   {
-    std::lock_guard<std::mutex> lock(return_mtx);
+    std::lock_guard<std::mutex> lock(return_call_mtx);
     _return_ready = true;
   }
-  return_cv.notify_one();  // wake worker
+  return_call_cv.notify_one();  // wake worker
+
   return true;
 }

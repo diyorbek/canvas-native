@@ -66,11 +66,6 @@ export const ffi = Deno.dlopen('./build/libcanvasnative.dylib', {
     result: 'void',
   },
 
-  get_native_ctx: {
-    parameters: [],
-    result: 'pointer',
-  },
-
   hex_to_NVGColor: {
     parameters: ['buffer'],
     result: STRUCT_NVGcolor,

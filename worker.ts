@@ -8,14 +8,6 @@ Bridge.nvgFillColor(10, 25, 130, 255);
 Bridge.nvgFontSize(30);
 Bridge.nvgText(350, 80, 'Hello, Canvas Native!');
 
-// this gives segfault cuz worker itselt is aready a separate thread
-// const nativeCtx = ffi.symbols.get_native_ctx();
-// const handle = ffi.symbols.nvgGetImageHandleFromPath(
-//   nativeCtx,
-//   stringToBuffer('./img.png'),
-//   0,
-// );
-// console.log({ nativeCtx, handle });
 const font = nvgCreateFont('Helb', DEFAULT_FONT_PATH);
 const imageHandle = nvgCreateImage('./img.png', 0);
 console.log({ font, imageHandle });
@@ -27,7 +19,7 @@ let dirY = 1;
 function draw() {
   Bridge.nvgClearRect(0, 0, 800, 500);
 
-  Bridge.nvgDrawImage(imageHandle, 0, 0, 600, 300);
+  Bridge.nvgDrawImage(imageHandle, x + 10, y + 10, 200, 100);
 
   Bridge.nvgFillColor(10, 50, 30, 255);
   Bridge.nvgBeginPath();

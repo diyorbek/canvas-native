@@ -141,7 +141,7 @@ Object.entries(symbols)
 const jsContent = jsFunctions.filter(Boolean).join('\n\n');
 
 Deno.writeTextFileSync(
-  import.meta.dirname + '/nanoVGBridge.ts',
+  import.meta.dirname + '/../src/nanoVGBridge.ts',
   `// !!! DO NOT EDIT !!! AUTO GENERATED !!!
 // prettier-ignore
 import { Command, CommandBuffer } from './commandBuffer.ts';
@@ -152,7 +152,7 @@ ${jsContent}
 `,
 );
 
-Deno.spawn('deno', ['fmt', import.meta.dirname + '/nanoVGBridge.ts']);
+Deno.spawn('deno', ['fmt', import.meta.dirname + '/../src/nanoVGBridge.ts']);
 
 const cppContent = cppFunctions.filter(Boolean).join('\n\n');
 Deno.writeTextFileSync(

@@ -98,15 +98,15 @@ ast.inner
     };
   });
 
-const fileContent = `
-// !!! DO NOT EDIT !!! AUTO GENERATED !!!
-// prettier-ignore
-export const NANOVG_SYMBOLS = ${JSON.stringify(symbols)} as const;
+// const fileContent = `
+// // !!! DO NOT EDIT !!! AUTO GENERATED !!!
+// // prettier-ignore
+// export const NANOVG_SYMBOLS = ${JSON.stringify(symbols)} as const;
 
-// For type checking
-NANOVG_SYMBOLS as Deno.ForeignLibraryInterface;
-`;
+// // For type checking
+// NANOVG_SYMBOLS as Deno.ForeignLibraryInterface;
+// `;
 
-const outfilePath = import.meta.dirname + '/nanovgSymbols.ts';
-Deno.writeFileSync(outfilePath, new TextEncoder().encode(fileContent));
-new Deno.Command(Deno.execPath(), { args: ['fmt', outfilePath] }).outputSync();
+// const outfilePath = import.meta.dirname + '/nanovgSymbols.ts';
+// Deno.writeFileSync(outfilePath, new TextEncoder().encode(fileContent));
+// new Deno.Command(Deno.execPath(), { args: ['fmt', outfilePath] }).outputSync();

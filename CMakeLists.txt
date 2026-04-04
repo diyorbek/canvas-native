@@ -59,7 +59,7 @@ target_link_libraries(${PROJECT_NAME} SDL3::SDL3 glad nanovg)
 set(LIBRARY_NAME canvasnative)
 add_library(${LIBRARY_NAME} SHARED
     native/lib.cpp
-    native/meta.cpp
+    native/window_state.cpp
     native/nvg_gl_impl.cpp
     native/utils.cpp
     native/window.cpp
@@ -67,10 +67,10 @@ add_library(${LIBRARY_NAME} SHARED
     native/nvg/rect.cpp
     native/nvg/text.cpp
     native/dispatcher/dispatcher.cpp
-    native/dispatcher/draw_call.cpp
+    native/dispatcher/draw_batch.cpp
     native/dispatcher/draw_commands.cpp
-    native/dispatcher/return_call.cpp
-    native/dispatcher/sync.cpp
+    native/dispatcher/sync_call.cpp
+    native/dispatcher/dispatcher_sync.cpp
 )
 target_include_directories(${LIBRARY_NAME} PRIVATE ${COMMON_INCLUDES})
 target_link_libraries(${LIBRARY_NAME} SDL3::SDL3 glad nanovg)

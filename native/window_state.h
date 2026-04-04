@@ -9,7 +9,7 @@ typedef struct SDL_GLContextState *SDL_GLContext;
 typedef struct NVGcontext NVGcontext;
 typedef struct NVGLUframebuffer NVGLUframebuffer;
 
-struct Meta {
+struct WindowState {
   int width;
   int height;
   SDL_Window* window;
@@ -21,5 +21,5 @@ struct Meta {
   std::thread dispatcher_thread;
 };
 
-extern Meta meta;
+extern WindowState window_state;
 extern std::atomic<bool> dispatcher_running;

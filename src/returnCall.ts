@@ -25,7 +25,7 @@ function resetStrings(): void {
 function returnCall(opcode: ReturnCommand, args: number[]): number {
   for (let i = 0; i < args.length; i++) argsBuffer[i] = args[i];
 
-  const result = ffi.symbols.return_call(
+  const result = ffi.symbols.sync_call(
     opcode,
     argsBuffer,
     strBuffer,

@@ -4,6 +4,6 @@
 
 #include "nanovg.h"
 
-void dispatcher_thread_func(std::promise<NVGcontext*> ready);
+void dispatcher_main(std::promise<NVGcontext*> ready);
 
-void flush_draw_cmds();
+void flush_batch();

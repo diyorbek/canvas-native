@@ -76,7 +76,7 @@ export const ffi = Deno.dlopen('./build/libcanvasnative.dylib', {
     result: 'void',
   },
 
-  return_call: {
+  sync_call: {
     parameters: ['i32', 'buffer', 'buffer', 'u32', 'u32'],
     result: 'i32',
   },

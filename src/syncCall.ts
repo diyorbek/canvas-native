@@ -46,18 +46,18 @@ function syncCall(
 
 // --- Public API ---
 
-export function nvgCreateFont(name: string, path: string): number {
+export function createFont(name: string, path: string): number {
   const nameOffset = writeString(name);
   const pathOffset = writeString(path);
   return syncCall(SyncCommand.CREATE_FONT, [nameOffset, pathOffset]);
 }
 
-export function nvgCreateImage(path: string, flags: number = 0): number {
+export function createImage(path: string, flags: number = 0): number {
   const pathOffset = writeString(path);
   return syncCall(SyncCommand.CREATE_IMAGE, [pathOffset, flags]);
 }
 
-export function nvgCreateImageFromMemory(
+export function createImageFromMemory(
   fileType: string,
   data: Uint8Array,
   flags: number = 0,

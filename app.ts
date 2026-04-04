@@ -6,16 +6,3 @@ const height = 500;
 const { mainLoop } = await createWindow(width, height, 'Canvas Native Demo');
 
 mainLoop();
-// (ctx: RenderingContext2D) => {
-//   /// obsolete
-//   demos.drawHouseDemo(ctx, width, height);
-//   demos.drawRects(ctx, width, height);
-//   demos.drawPaths(ctx, width, height);
-//   demos.drawArcs(ctx, width, height);
-//   demos.drawCurves(ctx, width, height);
-//   demos.drawStyles(ctx, width, height);
-//   demos.drawImages(ctx, width, height, new Image('./img.png'));
-//   // demos.drawText(ctx, width, height);
-//   // demos.drawAlpha(ctx, width, height);
-//   // demos.drawTransforms(ctx, width, height);
-// }

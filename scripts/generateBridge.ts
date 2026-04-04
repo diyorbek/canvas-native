@@ -96,14 +96,18 @@ Object.entries(symbols)
         .join(', ');
 
       // console.log(command, parameters.length);
-      const jsFunc = `static ${name}(${params}): void {
-  CommandBuffer.write(Command.${command});
-  CommandBuffer.write(${paramsCount});
+      const jsFuncName = name
+        .replace('nvg', '')
+        .replace(/^[A-Z]/, (c) => c.toLowerCase());
+
+      const jsFunc = `static ${jsFuncName}(${params}): void {
+  DrawCommandBuffer.write(DrawCommand.${command});
+  DrawCommandBuffer.write(${paramsCount});
   ${params
     .split(', ')
     .filter(Boolean)
-    .map((p: string) => `CommandBuffer.write(${p.split(':')[0]});`)
-    .concat(['CommandBuffer.schedule();'])
+    .map((p: string) => `DrawCommandBuffer.write(${p.split(':')[0]});`)
+    .concat(['DrawCommandBuffer.schedule();'])
     .join('\n  ')}
 }`;
       let argsIndex = 0;
@@ -141,18 +145,21 @@ Object.entries(symbols)
 const jsContent = jsFunctions.filter(Boolean).join('\n\n');
 
 Deno.writeTextFileSync(
-  import.meta.dirname + '/../src/nanoVGBridge.ts',
+  import.meta.dirname + '/../src/drawCommandsBase.ts',
   `// !!! DO NOT EDIT !!! AUTO GENERATED !!!
 // prettier-ignore
-import { Command, CommandBuffer } from './commandBuffer.ts';
+import { DrawCommand, DrawCommandBuffer } from './commandBuffer.ts';
 
-export class NanoVGBridge {
+export class DrawCommandsBase {
 ${jsContent}
 }
 `,
 );
 
-Deno.spawn('deno', ['fmt', import.meta.dirname + '/../src/nanoVGBridge.ts']);
+Deno.spawn('deno', [
+  'fmt',
+  import.meta.dirname + '/../src/drawCommandsBase.ts',
+]);
 
 const cppContent = cppFunctions.filter(Boolean).join('\n\n');
 Deno.writeTextFileSync(

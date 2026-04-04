@@ -1,4 +1,4 @@
-import { RGBAColor } from './types.ts';
+export type RGBAColor = [r: number, g: number, b: number, a: number];
 
 export const DEFAULT_FONT_PATH =
   Deno.build.os === 'darwin' ? '/System/Library/Fonts/Helvetica.ttc' : '';

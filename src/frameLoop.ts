@@ -1,4 +1,4 @@
-import { CommandBuffer } from './commandBuffer.ts';
+import { DrawCommandBuffer } from './drawCommandBuffer.ts';
 import { MessageType } from './constants.ts';
 
 // --- Shared frame buffer ---
@@ -38,7 +38,7 @@ function rafLoop(lastCounter: number = 0): void {
     const currentCounter = Atomics.load(counterView, 0);
     const timestamp = tsView[0];
 
-    CommandBuffer.flush();
+    DrawCommandBuffer.flush();
 
     const queue = nextRafQueue;
     nextRafQueue = [];
@@ -47,7 +47,7 @@ function rafLoop(lastCounter: number = 0): void {
       cb(timestamp);
     }
 
-    CommandBuffer.flush();
+    DrawCommandBuffer.flush();
     rafLoop(currentCounter);
   };
 

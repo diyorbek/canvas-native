@@ -1,13 +1,13 @@
 /// <reference lib="dom" />
 
-import { Bridge } from './bridge.ts';
+import { DrawCommands } from './drawCommands.ts';
 import { DEFAULT_FONT_PATH } from './constants.ts';
 import { Image } from './image.ts';
 import {
-  nvgCreateFont,
-  nvgCreateImage,
-  nvgCreateImageFromMemory,
-} from './returnCall.ts';
+  createFont,
+  createImage,
+  createImageFromMemory,
+} from './syncCall.ts';
 import { parseColorString, parseCSSFontString } from './utils.ts';
 
 enum NVGwinding {
@@ -178,10 +178,10 @@ export class RenderingContext2D implements SlimCanvasRenderingContext2D {
   #wordSpacing: string = '0px';
 
   constructor() {
-    this.#defaultFontHandle = nvgCreateFont('sans-serif', DEFAULT_FONT_PATH);
+    this.#defaultFontHandle = createFont('sans-serif', DEFAULT_FONT_PATH);
     this.font = '10px sans-serif';
     const [r, g, b, a] = parseColorString('#000');
-    Bridge.nvgFillColor(r, g, b, a);
+    DrawCommands.fillColor(r, g, b, a);
   }
 
   get direction() {
@@ -200,7 +200,7 @@ export class RenderingContext2D implements SlimCanvasRenderingContext2D {
     }
     this.#fillStyle = value;
     const [r, g, b, a] = parseColorString(value);
-    Bridge.nvgFillColor(r, g, b, a);
+    DrawCommands.fillColor(r, g, b, a);
   }
 
   get font() {
@@ -210,8 +210,8 @@ export class RenderingContext2D implements SlimCanvasRenderingContext2D {
     this.#font = value;
     const font = parseCSSFontString(value);
     if (!font) return;
-    Bridge.nvgFontFaceId(this.#defaultFontHandle);
-    Bridge.nvgFontSize(font.size);
+    DrawCommands.fontFaceId(this.#defaultFontHandle);
+    DrawCommands.fontSize(font.size);
   }
 
   get fontKerning() {
@@ -240,7 +240,7 @@ export class RenderingContext2D implements SlimCanvasRenderingContext2D {
   }
   set globalAlpha(value: number) {
     this.#globalAlpha = value;
-    Bridge.nvgGlobalAlpha(value);
+    DrawCommands.globalAlpha(value);
   }
 
   get globalCompositeOperation() {
@@ -248,7 +248,7 @@ export class RenderingContext2D implements SlimCanvasRenderingContext2D {
   }
   set globalCompositeOperation(value: GlobalCompositeOperation) {
     this.#globalCompositeOperation = value;
-    Bridge.nvgGlobalCompositeOperation(getNvgCompositeOperation(value));
+    DrawCommands.globalCompositeOperation(getNvgCompositeOperation(value));
   }
 
   get imageSmoothingEnabled() {
@@ -270,7 +270,7 @@ export class RenderingContext2D implements SlimCanvasRenderingContext2D {
   }
   set letterSpacing(value: string) {
     this.#letterSpacing = value;
-    Bridge.nvgTextLetterSpacing(parseFloat(value));
+    DrawCommands.textLetterSpacing(parseFloat(value));
   }
 
   get lineCap() {
@@ -278,7 +278,7 @@ export class RenderingContext2D implements SlimCanvasRenderingContext2D {
   }
   set lineCap(value: CanvasLineCap) {
     this.#lineCap = value;
-    Bridge.nvgLineCap(getNvgLineCap(value));
+    DrawCommands.lineCap(getNvgLineCap(value));
   }
 
   get lineDashOffset() {
@@ -293,7 +293,7 @@ export class RenderingContext2D implements SlimCanvasRenderingContext2D {
   }
   set lineJoin(value: CanvasLineJoin) {
     this.#lineJoin = value;
-    Bridge.nvgLineJoin(getNvgLineJoin(value));
+    DrawCommands.lineJoin(getNvgLineJoin(value));
   }
 
   get lineWidth() {
@@ -301,7 +301,7 @@ export class RenderingContext2D implements SlimCanvasRenderingContext2D {
   }
   set lineWidth(value: number) {
     this.#lineWidth = value;
-    Bridge.nvgStrokeWidth(value);
+    DrawCommands.strokeWidth(value);
   }
 
   get miterLimit() {
@@ -309,7 +309,7 @@ export class RenderingContext2D implements SlimCanvasRenderingContext2D {
   }
   set miterLimit(value: number) {
     this.#miterLimit = value;
-    Bridge.nvgMiterLimit(value);
+    DrawCommands.miterLimit(value);
   }
 
   get shadowBlur() {
@@ -347,7 +347,7 @@ export class RenderingContext2D implements SlimCanvasRenderingContext2D {
     if (typeof value !== 'string') return;
     this.#strokeStyle = value;
     const [r, g, b, a] = parseColorString(value);
-    Bridge.nvgStrokeColor(r, g, b, a);
+    DrawCommands.strokeColor(r, g, b, a);
   }
 
   get textAlign() {
@@ -355,7 +355,7 @@ export class RenderingContext2D implements SlimCanvasRenderingContext2D {
   }
   set textAlign(value: CanvasTextAlign) {
     this.#textAlign = value;
-    Bridge.nvgTextAlign(getNvgAlign(value));
+    DrawCommands.textAlign(getNvgAlign(value));
   }
 
   get textBaseline() {
@@ -363,7 +363,7 @@ export class RenderingContext2D implements SlimCanvasRenderingContext2D {
   }
   set textBaseline(value: CanvasTextBaseline) {
     this.#textBaseline = value;
-    Bridge.nvgTextAlign(getNvgBaseline(value));
+    DrawCommands.textAlign(getNvgBaseline(value));
   }
 
   get textRendering() {
@@ -400,9 +400,9 @@ export class RenderingContext2D implements SlimCanvasRenderingContext2D {
     let imageHandle = -1;
 
     if (image.isLocalFile && typeof image.src === 'string') {
-      imageHandle = nvgCreateImage(image.src, flags);
+      imageHandle = createImage(image.src, flags);
     } else if (image.data && image.fileType) {
-      imageHandle = nvgCreateImageFromMemory(image.fileType, image.data, flags);
+      imageHandle = createImageFromMemory(image.fileType, image.data, flags);
     }
 
     if (imageHandle < 0) {
@@ -410,14 +410,14 @@ export class RenderingContext2D implements SlimCanvasRenderingContext2D {
     }
 
     if (typeof dw === 'undefined' || typeof dh === 'undefined') {
-      Bridge.nvgDrawImageWithDeafultSize(imageHandle, dx, dy);
+      DrawCommands.drawImageWithDeafultSize(imageHandle, dx, dy);
     } else {
-      Bridge.nvgDrawImage(imageHandle, dx, dy, dw, dh);
+      DrawCommands.drawImage(imageHandle, dx, dy, dw, dh);
     }
   }
 
   beginPath(): void {
-    Bridge.nvgBeginPath();
+    DrawCommands.beginPath();
   }
 
   clip(_path?: unknown, _fillRule?: unknown): void {
@@ -425,7 +425,7 @@ export class RenderingContext2D implements SlimCanvasRenderingContext2D {
   }
 
   fill(_path?: unknown, _fillRule?: unknown): void {
-    Bridge.nvgFill();
+    DrawCommands.fill();
   }
 
   isPointInPath(
@@ -442,7 +442,7 @@ export class RenderingContext2D implements SlimCanvasRenderingContext2D {
   }
 
   stroke(_path?: unknown): void {
-    Bridge.nvgStroke();
+    DrawCommands.stroke();
   }
 
   createConicGradient(
@@ -514,7 +514,7 @@ export class RenderingContext2D implements SlimCanvasRenderingContext2D {
     endAngle: number,
     counterclockwise = false,
   ): void {
-    Bridge.nvgArc(
+    DrawCommands.arc(
       x,
       y,
       radius,
@@ -525,7 +525,7 @@ export class RenderingContext2D implements SlimCanvasRenderingContext2D {
   }
 
   arcTo(x1: number, y1: number, x2: number, y2: number, radius: number): void {
-    Bridge.nvgArcTo(x1, y1, x2, y2, radius);
+    DrawCommands.arcTo(x1, y1, x2, y2, radius);
   }
 
   bezierCurveTo(
@@ -536,11 +536,11 @@ export class RenderingContext2D implements SlimCanvasRenderingContext2D {
     x: number,
     y: number,
   ): void {
-    Bridge.nvgBezierTo(cp1x, cp1y, cp2x, cp2y, x, y);
+    DrawCommands.bezierTo(cp1x, cp1y, cp2x, cp2y, x, y);
   }
 
   closePath(): void {
-    Bridge.nvgClosePath();
+    DrawCommands.closePath();
   }
 
   ellipse(
@@ -557,19 +557,19 @@ export class RenderingContext2D implements SlimCanvasRenderingContext2D {
   }
 
   lineTo(x: number, y: number): void {
-    Bridge.nvgLineTo(x, y);
+    DrawCommands.lineTo(x, y);
   }
 
   moveTo(x: number, y: number): void {
-    Bridge.nvgMoveTo(x, y);
+    DrawCommands.moveTo(x, y);
   }
 
   quadraticCurveTo(cpx: number, cpy: number, x: number, y: number): void {
-    Bridge.nvgQuadTo(cpx, cpy, x, y);
+    DrawCommands.quadTo(cpx, cpy, x, y);
   }
 
   rect(x: number, y: number, w: number, h: number): void {
-    Bridge.nvgRect(x, y, w, h);
+    DrawCommands.rect(x, y, w, h);
   }
 
   roundRect(
@@ -579,7 +579,7 @@ export class RenderingContext2D implements SlimCanvasRenderingContext2D {
     h: number,
     radii?: number | DOMPointInit | (number | DOMPointInit)[],
   ): void {
-    Bridge.nvgRoundedRect(x, y, w, h, radii as number);
+    DrawCommands.roundedRect(x, y, w, h, radii as number);
   }
 
   getLineDash(): number[] {
@@ -591,23 +591,23 @@ export class RenderingContext2D implements SlimCanvasRenderingContext2D {
   }
 
   clearRect(x: number, y: number, w: number, h: number): void {
-    Bridge.nvgClearRect(x, y, w, h);
+    DrawCommands.clearRect(x, y, w, h);
   }
 
   fillRect(x: number, y: number, w: number, h: number): void {
-    Bridge.nvgBeginPath();
-    Bridge.nvgRect(x, y, w, h);
+    DrawCommands.beginPath();
+    DrawCommands.rect(x, y, w, h);
     const [r, g, b, a] = parseColorString(this.fillStyle as string);
-    Bridge.nvgFillColor(r, g, b, a);
-    Bridge.nvgFill();
+    DrawCommands.fillColor(r, g, b, a);
+    DrawCommands.fill();
   }
 
   strokeRect(x: number, y: number, w: number, h: number): void {
-    Bridge.nvgBeginPath();
-    Bridge.nvgRect(x, y, w, h);
+    DrawCommands.beginPath();
+    DrawCommands.rect(x, y, w, h);
     const [r, g, b, a] = parseColorString(this.strokeStyle as string);
-    Bridge.nvgStrokeColor(r, g, b, a);
-    Bridge.nvgStroke();
+    DrawCommands.strokeColor(r, g, b, a);
+    DrawCommands.stroke();
   }
 
   isContextLost(): boolean {
@@ -619,15 +619,15 @@ export class RenderingContext2D implements SlimCanvasRenderingContext2D {
   }
 
   restore(): void {
-    Bridge.nvgRestore();
+    DrawCommands.restore();
   }
 
   save(): void {
-    Bridge.nvgSave();
+    DrawCommands.save();
   }
 
   fillText(text: string, x: number, y: number, _maxWidth?: number): void {
-    Bridge.nvgText(x, y, text);
+    DrawCommands.text(x, y, text);
   }
 
   measureText(_text: string): TextMetrics {
@@ -635,7 +635,7 @@ export class RenderingContext2D implements SlimCanvasRenderingContext2D {
   }
 
   strokeText(text: string, x: number, y: number, _maxWidth?: number): void {
-    Bridge.nvgText(x, y, text);
+    DrawCommands.text(x, y, text);
   }
 
   resetTransform(): void {
@@ -643,11 +643,11 @@ export class RenderingContext2D implements SlimCanvasRenderingContext2D {
   }
 
   rotate(angle: number): void {
-    Bridge.nvgRotate(angle);
+    DrawCommands.rotate(angle);
   }
 
   scale(x: number, y: number): void {
-    Bridge.nvgScale(x, y);
+    DrawCommands.scale(x, y);
   }
 
   setTransform(
@@ -658,7 +658,7 @@ export class RenderingContext2D implements SlimCanvasRenderingContext2D {
     e?: unknown,
     f?: unknown,
   ): void {
-    Bridge.nvgTransform(
+    DrawCommands.transform(
       a as number,
       b as number,
       c as number,
@@ -680,7 +680,7 @@ export class RenderingContext2D implements SlimCanvasRenderingContext2D {
   }
 
   translate(x: number, y: number): void {
-    Bridge.nvgTranslate(x, y);
+    DrawCommands.translate(x, y);
   }
 
   drawFocusIfNeeded(_path: unknown, _element?: unknown): void {

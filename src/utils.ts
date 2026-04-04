@@ -1,6 +1,5 @@
 import { decodeBase64 } from 'jsr:@std/encoding@1.0.10/base64';
-import { NAMED_COLORS_MAP } from './constants.ts';
-import { RGBAColor } from './types.ts';
+import { NAMED_COLORS_MAP, type RGBAColor } from './constants.ts';
 
 export function stringToBuffer(text: string): BufferSource {
   return new TextEncoder().encode(text).buffer as BufferSource;

@@ -1,6 +1,6 @@
 import { ffi } from './ffi.ts';
 
-export class CommandBuffer {
+export class DrawCommandBuffer {
   private static cmdBuffer = new Float32Array(2 ** 16);
   private static strBuffer = new Uint8Array(2 ** 16);
   private static cmdHead = 0;
@@ -55,7 +55,7 @@ export class CommandBuffer {
   }
 }
 
-export enum Command {
+export enum DrawCommand {
   ARC = 0,
   ARC_TO = 1,
   BEGIN_PATH = 2,

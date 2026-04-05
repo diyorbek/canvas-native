@@ -18,7 +18,8 @@ void dispatcher_main(std::promise<NVGcontext*> ready) {
   // Dispatcher thread needs its own glad bindings
   gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress);
 
-  window_state.dispatcher_nvg = nvgCreateGL3(NVG_ANTIALIAS);
+  window_state.dispatcher_nvg =
+      nvgCreateGL3(NVG_ANTIALIAS | NVG_STENCIL_STROKES);
 
   init_draw_commands();
   init_sync_commands();
@@ -48,6 +49,8 @@ void flush_batch() {
 
   nvgluBindFramebuffer(window_state.canvas_layer);
   glViewport(0, 0, window_state.width, window_state.height);
+  glEnable(GL_STENCIL_TEST);
+  glClear(GL_STENCIL_BUFFER_BIT);
   nvgBeginFrame(window_state.dispatcher_nvg, window_state.width,
                 window_state.height, 1.0f);
   glEnable(GL_BLEND);

@@ -80,7 +80,7 @@ export function drawArcs(ctx, W, H) {
   // Full circle
   ctx.beginPath();
   // arc(x, y, radius, startAngle, endAngle, counterClockwise)
-  ctx.arc(300, 300, 70, 0, Math.PI * 2);
+  ctx.arc(150, 300, 70, 0, Math.PI * 2);
   ctx.fillStyle = '#ff0';
   ctx.fill();
 

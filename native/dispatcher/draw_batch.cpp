@@ -1,7 +1,7 @@
 #include "draw_batch.h"
 
-#include "draw_commands.h"
 #include "dispatcher_sync.h"
+#include "draw_commands.h"
 
 static std::vector<float> draw_cmds;
 static std::vector<uint8_t> string_args;
@@ -13,7 +13,7 @@ extern "C" void submit_batch(float* cmd_buf, uint32_t cmd_buf_length,
   std::lock_guard<std::mutex> lock(draw_batch_mtx);
   draw_cmds.insert(draw_cmds.end(), cmd_buf, cmd_buf + cmd_buf_length);
   string_args.insert(string_args.end(), string_args_buf,
-                      string_args_buf + string_args_buf_length);
+                     string_args_buf + string_args_buf_length);
 
   draw_call_pending = true;
   dispatcher_cv.notify_one();  // wake processing thread

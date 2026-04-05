@@ -1,7 +1,9 @@
 /// <reference lib="dom" />
 
-import { DrawCommands } from './drawCommands.ts';
+import './frameLoop.ts';
+
 import { DEFAULT_FONT_PATH } from './constants.ts';
+import { DrawCommands } from './drawCommands.ts';
 import { Image } from './image.ts';
 import { createFont } from './syncCall.ts';
 import { parseColorString, parseCSSFontString } from './utils.ts';

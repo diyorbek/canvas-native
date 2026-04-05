@@ -1,5 +1,5 @@
 /**
- * @import { RenderingContext2D } from '../src/context2d.ts';
+ * @import { RenderingContext2D } from '../src/renderingContext2d.ts';
  */
 
 /**
@@ -14,7 +14,7 @@ function clearCanvas(ctx, W, H) {
   // Reset any transformations (like translate, rotate)
   // ctx.setTransform(1, 0, 0, 1, 0, 0);
   // Clear the entire canvas
-  ctx.clearRect(0, 0, W, H);
+  // ctx.clearRect(0, 0, W, H);
   // Draw a simple border to show the canvas boundary
   // ctx.strokeStyle = "#cbd";
   // ctx.lineWidth = 1;

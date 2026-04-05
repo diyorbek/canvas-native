@@ -18,8 +18,7 @@ void dispatcher_main(std::promise<NVGcontext*> ready) {
   // Dispatcher thread needs its own glad bindings
   gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress);
 
-  window_state.dispatcher_nvg =
-      nvgCreateGL3(NVG_ANTIALIAS | NVG_STENCIL_STROKES);
+  window_state.dispatcher_nvg = nvgCreateGL3(NVG_ANTIALIAS);
 
   init_draw_commands();
   init_sync_commands();

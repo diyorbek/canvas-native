@@ -7,9 +7,9 @@
 #include "sdl3_nvg_setup.h"
 
 // Local headers
-#include "window_state.h"
 #include "dispatcher/dispatcher.h"
 #include "dispatcher/dispatcher_sync.h"
+#include "window_state.h"
 
 void* create_window(int width, int height, const char* title) {
   SDL_Init(SDL_INIT_VIDEO);
@@ -24,7 +24,8 @@ void* create_window(int width, int height, const char* title) {
 
   window_state.width  = width;
   window_state.height = height;
-  window_state.window = SDL_CreateWindow(title, width, height, SDL_WINDOW_OPENGL);
+  window_state.window =
+      SDL_CreateWindow(title, width, height, SDL_WINDOW_OPENGL);
 
   // Create main context first; dispatcher_ctx shares its resources
   window_state.main_ctx       = SDL_GL_CreateContext(window_state.window);
@@ -38,7 +39,8 @@ void* create_window(int width, int height, const char* title) {
   // Main thread only needs NVG for compositing, no stencil strokes needed
   window_state.main_nvg = nvgCreateGL3(NVG_ANTIALIAS);
   // canvas_layer must be created in the main thread so it can composite it
-  window_state.canvas_layer = nvgluCreateFramebuffer(window_state.main_nvg, width, height, 0);
+  window_state.canvas_layer =
+      nvgluCreateFramebuffer(window_state.main_nvg, width, height, 0);
 
   // Spawn dispatcher thread; wait for it to finish GL+NVG init before returning
   std::promise<NVGcontext*> ready;
@@ -58,13 +60,14 @@ void composite_canvas_frame() {
   glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-  nvgBeginFrame(window_state.main_nvg, window_state.width, window_state.height, 1.0f);
+  nvgBeginFrame(window_state.main_nvg, window_state.width, window_state.height,
+                1.0f);
   glEnable(GL_BLEND);
   glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 
-  auto canvas_frame =
-      nvgImagePattern(window_state.main_nvg, 0, 0, window_state.width, window_state.height, 0,
-                      window_state.canvas_layer->image, 1.0f);
+  auto canvas_frame = nvgImagePattern(
+      window_state.main_nvg, 0, 0, window_state.width, window_state.height, 0,
+      window_state.canvas_layer->image, 1.0f);
   nvgBeginPath(window_state.main_nvg);
   nvgRect(window_state.main_nvg, 0, 0, window_state.width, window_state.height);
   nvgFillPaint(window_state.main_nvg, canvas_frame);

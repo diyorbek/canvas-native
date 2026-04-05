@@ -17,7 +17,7 @@ let dirY = 1;
 function draw() {
   ctx.clearRect(0, 0, 800, 500);
 
-  // ctx.drawImage(img, x + 10, y + 10, 200, 100);
+  ctx.drawImage(img, x + 10, y + 10, 200, 100);
 
   ctx.fillStyle = 'rgb(10, 50, 30)';
   ctx.fillRect(x, y, 100, 100);

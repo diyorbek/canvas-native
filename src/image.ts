@@ -1,5 +1,8 @@
 import { ffi } from './ffi.ts';
+import { createImage, createImageFromMemory } from './syncCall.ts';
 import { imageBufferFromDataUrl, isFileUrl, stringToBuffer } from './utils.ts';
+
+const DEFAULT_IMAGE_FLAGS = 0x01 | 0x20; // GENERATE_MIPMAPS | NEAREST
 
 export type ImageSource = Uint8Array | string;
 
@@ -13,6 +16,7 @@ export class Image {
   #src: ImageSource;
   #width: number | null = null;
   #height: number | null = null;
+  #handle: number | null = null;
 
   constructor(data: string);
   constructor(data: Uint8Array, imageType: string);
@@ -57,6 +61,23 @@ export class Image {
   get height(): number {
     this.#loadInfo();
     return this.#height!;
+  }
+
+  get handle(): number {
+    if (this.#handle === null) {
+      if (this.#isLocalFile && typeof this.#src === 'string') {
+        this.#handle = createImage(this.#src, DEFAULT_IMAGE_FLAGS);
+      } else if (this.#data && this.#fileType) {
+        this.#handle = createImageFromMemory(this.#fileType, this.#data, DEFAULT_IMAGE_FLAGS);
+      } else {
+        throw new Error('Cannot create image handle!');
+      }
+
+      if (this.#handle < 0) {
+        throw new Error('Failed to create image handle!');
+      }
+    }
+    return this.#handle;
   }
 
   #loadInfo() {

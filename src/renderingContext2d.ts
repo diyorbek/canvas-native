@@ -3,11 +3,7 @@
 import { DrawCommands } from './drawCommands.ts';
 import { DEFAULT_FONT_PATH } from './constants.ts';
 import { Image } from './image.ts';
-import {
-  createFont,
-  createImage,
-  createImageFromMemory,
-} from './syncCall.ts';
+import { createFont } from './syncCall.ts';
 import { parseColorString, parseCSSFontString } from './utils.ts';
 
 enum NVGwinding {
@@ -45,15 +41,6 @@ enum NVGcompositeOperation {
   NVG_LIGHTER,
   NVG_COPY,
   NVG_XOR,
-}
-
-enum NVGimageFlags {
-  NVG_IMAGE_GENERATE_MIPMAPS = 1 << 0,
-  NVG_IMAGE_REPEATX = 1 << 1,
-  NVG_IMAGE_REPEATY = 1 << 2,
-  NVG_IMAGE_FLIPY = 1 << 3,
-  NVG_IMAGE_PREMULTIPLIED = 1 << 4,
-  NVG_IMAGE_NEAREST = 1 << 5,
 }
 
 function getNvgAlign(align: CanvasTextAlign): number {
@@ -393,26 +380,10 @@ export class RenderingContext2D implements SlimCanvasRenderingContext2D {
     dw?: number,
     dh?: number,
   ): void {
-    const flags =
-      NVGimageFlags.NVG_IMAGE_GENERATE_MIPMAPS |
-      NVGimageFlags.NVG_IMAGE_NEAREST;
-
-    let imageHandle = -1;
-
-    if (image.isLocalFile && typeof image.src === 'string') {
-      imageHandle = createImage(image.src, flags);
-    } else if (image.data && image.fileType) {
-      imageHandle = createImageFromMemory(image.fileType, image.data, flags);
-    }
-
-    if (imageHandle < 0) {
-      throw new Error('Cannot create image handle!');
-    }
-
     if (typeof dw === 'undefined' || typeof dh === 'undefined') {
-      DrawCommands.drawImageWithDeafultSize(imageHandle, dx, dy);
+      DrawCommands.drawImageWithDeafultSize(image.handle, dx, dy);
     } else {
-      DrawCommands.drawImage(imageHandle, dx, dy, dw, dh);
+      DrawCommands.drawImage(image.handle, dx, dy, dw, dh);
     }
   }
 

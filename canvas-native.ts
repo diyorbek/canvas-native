@@ -16,7 +16,8 @@ const tsView = new Float64Array(sab, 8, 1);
 
 async function spawnWorker(path: string) {
   const workerSignal = Promise.withResolvers();
-  const workerPath = new URL(path, import.meta.url).href;
+  const workerPath = new URL(path, Deno.mainModule).href;
+
   const worker = new Worker(workerPath, { type: 'module' });
 
   // Transfer SAB to worker before it starts waiting
@@ -34,7 +35,7 @@ export async function createWindow(
   width: number,
   height: number,
   title: string,
-  workerPath: string = './worker.ts',
+  workerPath: string,
 ) {
   ffi.symbols.create_window(width, height, stringToBuffer(title));
 

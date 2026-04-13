@@ -1,8 +1,7 @@
 import { DrawCommandBuffer } from './drawCommandBuffer.ts';
-import { MessageType } from './constants.ts';
 
 // --- Shared frame buffer ---
-// Received from main thread via postMessage({ type: 'init', sab }).
+// Received from main thread via initFrameLoop(sab).
 // Main thread writes timestamp + increments counter each frame after SwapWindow.
 // Layout (16 bytes):
 //   [0..3]  uint32  frame counter — Atomics.wait() target
@@ -11,17 +10,11 @@ import { MessageType } from './constants.ts';
 let counterView: Int32Array;
 let tsView: Float64Array;
 
-self.addEventListener('message', (e) => {
-  if (e.data?.type === MessageType.INIT) {
-    self.postMessage({ type: MessageType.INIT });
-
-    const sab = e.data.sab as SharedArrayBuffer;
-    counterView = new Int32Array(sab, 0, 1);
-    tsView = new Float64Array(sab, 8, 1);
-    // Start loop synchronously here — no await, no async
-    rafLoop();
-  }
-});
+export function initFrameLoop(sab: SharedArrayBuffer): void {
+  counterView = new Int32Array(sab, 0, 1);
+  tsView = new Float64Array(sab, 8, 1);
+  rafLoop();
+}
 
 // --- rAF queue ---
 type RafCallback = (timestamp: number) => void;

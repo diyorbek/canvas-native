@@ -1,7 +1,5 @@
 /// <reference lib="dom" />
 
-import './frameLoop.ts';
-
 import { DEFAULT_FONT_PATH } from './constants.ts';
 import { DrawCommands } from './drawCommands.ts';
 import { Image } from './image.ts';

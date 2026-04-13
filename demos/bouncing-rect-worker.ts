@@ -1,9 +1,9 @@
-import { requestAnimationFrame } from './src/frameLoop.ts';
-import { Image } from './src/image.ts';
-import { RenderingContext2D } from './src/renderingContext2d.ts';
+import { initCanvas } from '../src/canvas.ts';
+import { requestAnimationFrame } from '../src/frameLoop.ts';
+import { Image } from '../src/image.ts';
 
-const ctx = new RenderingContext2D();
-const img = new Image('./img.png');
+const ctx = await initCanvas();
+const img = new Image(import.meta.dirname + '/img.png');
 
 ctx.fillStyle = 'rgb(10, 25, 130)';
 ctx.font = '30px sans-serif';
@@ -17,7 +17,7 @@ let dirY = 1;
 function draw() {
   ctx.clearRect(0, 0, 800, 500);
 
-  ctx.drawImage(img, x + 10, y + 10, 200, 100);
+  ctx.drawImage(img, 10, 10, 200, 100);
 
   ctx.fillStyle = 'rgb(10, 50, 30)';
   ctx.fillRect(x, y, 100, 100);

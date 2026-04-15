@@ -5,7 +5,7 @@
   "exports": {
     ".": "./mod.ts",
     "./app": "./canvas-native.ts",
-    "./worker": "./src/canvas.ts"
+    "./worker": "./src/runtime/canvas.ts"
   },
   "publish": {
     "include": [

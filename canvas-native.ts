@@ -1,5 +1,3 @@
-/// <reference lib="deno.ns" />
-
 import { MessageType } from './src/constants.ts';
 import { ffi } from './src/ffi/bindings.ts';
 import { stringToBuffer } from './src/utils.ts';

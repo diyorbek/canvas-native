@@ -1,5 +1,3 @@
-/// <reference lib="deno.ns" />
-
 import { Image } from './src/api/image.ts';
 import { RenderingContext2D } from './src/api/renderingContext2d.ts';
 import { getContext, requestAnimationFrame } from './src/runtime/canvas.ts';

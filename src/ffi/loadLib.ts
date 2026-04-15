@@ -1,5 +1,3 @@
-/// <reference lib="deno.ns" />
-
 import denoJson from '../../deno.json' with { type: 'json' };
 
 // Version comes from deno.json — single source of truth for both JS and native.

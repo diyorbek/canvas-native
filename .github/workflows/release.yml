@@ -17,9 +17,11 @@ jobs:
           - os: macos-14
             target: darwin-arm64
             artifact: libcanvasnative.dylib
-          - os: macos-13
+            cmake-extra: ''
+          - os: macos-14
             target: darwin-x64
             artifact: libcanvasnative.dylib
+            cmake-extra: '-DCMAKE_OSX_ARCHITECTURES=x86_64'
           - os: ubuntu-24.04
             target: linux-x64
             artifact: libcanvasnative.so
@@ -43,9 +45,9 @@ jobs:
           sudo apt-get install -y \
             cmake ninja-build \
             libgl1-mesa-dev libx11-dev libxext-dev libxrandr-dev \
-            libxcursor-dev libxi-dev libxinerama-dev libwayland-dev \
-            libxkbcommon-dev libasound2-dev libpulse-dev libdbus-1-dev \
-            libudev-dev libibus-1.0-dev
+            libxcursor-dev libxi-dev libxinerama-dev libxss-dev \
+            libwayland-dev libxkbcommon-dev libasound2-dev libpulse-dev \
+            libdbus-1-dev libudev-dev libibus-1.0-dev
 
       - name: Set up MSVC (Windows)
         if: startsWith(matrix.os, 'windows')
@@ -54,7 +56,7 @@ jobs:
           arch: ${{ matrix.target == 'windows-arm64' && 'arm64' || 'x64' }}
 
       - name: Configure
-        run: cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+        run: cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_POLICY_VERSION_MINIMUM=3.5 ${{ matrix.cmake-extra }}
 
       - name: Build
         run: cmake --build build --target canvasnative --config Release
@@ -63,7 +65,9 @@ jobs:
         shell: bash
         run: |
           cp build/${{ matrix.artifact }} ${{ matrix.artifact }}.${{ matrix.target }}
-          shasum -a 256 ${{ matrix.artifact }}.${{ matrix.target }} > ${{ matrix.artifact }}.${{ matrix.target }}.sha256
+          # openssl is preinstalled on all runners; outputs "SHA2-256(file)= <hash>",
+          # so we grab just the hash with awk to match loadLib.ts's parser.
+          openssl dgst -sha256 ${{ matrix.artifact }}.${{ matrix.target }} | awk '{print $NF}' > ${{ matrix.artifact }}.${{ matrix.target }}.sha256
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4

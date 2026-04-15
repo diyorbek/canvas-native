@@ -145,10 +145,10 @@ Object.entries(symbols)
 const jsContent = jsFunctions.filter(Boolean).join('\n\n');
 
 Deno.writeTextFileSync(
-  import.meta.dirname + '/../src/drawCommandsBase.ts',
+  import.meta.dirname + '/../src/commands/drawBase.ts',
   `// !!! DO NOT EDIT !!! AUTO GENERATED !!!
 // prettier-ignore
-import { DrawCommand, DrawCommandBuffer } from './commandBuffer.ts';
+import { DrawCommand, DrawCommandBuffer } from './buffer.ts';
 
 export class DrawCommandsBase {
 ${jsContent}
@@ -158,7 +158,7 @@ ${jsContent}
 
 Deno.spawn('deno', [
   'fmt',
-  import.meta.dirname + '/../src/drawCommandsBase.ts',
+  import.meta.dirname + '/../src/commands/drawBase.ts',
 ]);
 
 const cppContent = cppFunctions.filter(Boolean).join('\n\n');

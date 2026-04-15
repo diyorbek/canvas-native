@@ -1,5 +1,5 @@
-import { DrawCommand, DrawCommandBuffer } from './drawCommandBuffer.ts';
-import { DrawCommandsBase } from './drawCommandsBase.ts';
+import { DrawCommand, DrawCommandBuffer } from './buffer.ts';
+import { DrawCommandsBase } from './drawBase.ts';
 
 export class DrawCommands extends DrawCommandsBase {
   static text(x: number, y: number, text: string) {

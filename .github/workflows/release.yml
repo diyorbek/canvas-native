@@ -1,0 +1,119 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build ${{ matrix.target }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-14
+            target: darwin-arm64
+            artifact: libcanvasnative.dylib
+          - os: macos-13
+            target: darwin-x64
+            artifact: libcanvasnative.dylib
+          - os: ubuntu-24.04
+            target: linux-x64
+            artifact: libcanvasnative.so
+          - os: ubuntu-24.04-arm
+            target: linux-arm64
+            artifact: libcanvasnative.so
+          - os: windows-2022
+            target: windows-x64
+            artifact: libcanvasnative.dll
+          - os: windows-11-arm
+            target: windows-arm64
+            artifact: libcanvasnative.dll
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Linux deps
+        if: startsWith(matrix.os, 'ubuntu')
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            cmake ninja-build \
+            libgl1-mesa-dev libx11-dev libxext-dev libxrandr-dev \
+            libxcursor-dev libxi-dev libxinerama-dev libwayland-dev \
+            libxkbcommon-dev libasound2-dev libpulse-dev libdbus-1-dev \
+            libudev-dev libibus-1.0-dev
+
+      - name: Set up MSVC (Windows)
+        if: startsWith(matrix.os, 'windows')
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: ${{ matrix.target == 'windows-arm64' && 'arm64' || 'x64' }}
+
+      - name: Configure
+        run: cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        run: cmake --build build --target canvasnative --config Release
+
+      - name: Rename artifact
+        shell: bash
+        run: |
+          cp build/${{ matrix.artifact }} ${{ matrix.artifact }}.${{ matrix.target }}
+          shasum -a 256 ${{ matrix.artifact }}.${{ matrix.target }} > ${{ matrix.artifact }}.${{ matrix.target }}.sha256
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.target }}
+          path: |
+            ${{ matrix.artifact }}.${{ matrix.target }}
+            ${{ matrix.artifact }}.${{ matrix.target }}.sha256
+
+  github-release:
+    name: Publish GitHub Release
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: Attach binaries to release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: artifacts/*
+          # generate_release_notes: true  # uncomment to auto-generate when CLI-tagged
+
+  jsr-publish:
+    name: Publish to JSR
+    # Runs after github-release so the binaries are already available
+    # by the time users install from JSR and trigger the auto-download.
+    needs: github-release
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Verify tag matches deno.json version
+        run: |
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          PKG_VERSION=$(deno eval 'import p from "./deno.json" with { type: "json" }; console.log(p.version)')
+          if [ "$TAG_VERSION" != "$PKG_VERSION" ]; then
+            echo "Tag version ($TAG_VERSION) does not match deno.json ($PKG_VERSION)"
+            exit 1
+          fi
+      - name: Publish to JSR
+        run: deno publish

@@ -1,6 +1,6 @@
-import { initCanvas } from '../src/canvas.ts';
-import { requestAnimationFrame } from '../src/frameLoop.ts';
-import { Image } from '../src/image.ts';
+import { Image } from '../src/api/image.ts';
+import { initCanvas } from '../src/runtime/canvas.ts';
+import { requestAnimationFrame } from '../src/runtime/frameLoop.ts';
 
 const ctx = await initCanvas();
 const img = new Image(import.meta.dirname + '/img.png');

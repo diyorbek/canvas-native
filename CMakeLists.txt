@@ -75,3 +75,11 @@ add_library(${LIBRARY_NAME} SHARED
 )
 target_include_directories(${LIBRARY_NAME} PRIVATE ${COMMON_INCLUDES})
 target_link_libraries(${LIBRARY_NAME} SDL3::SDL3 glad nanovg)
+
+# Force consistent output name across all toolchains.
+# Without this, MSVC produces `canvasnative.dll` while MinGW/clang produce
+# `libcanvasnative.dll`. Unix/macOS already use the `lib` prefix by default.
+set_target_properties(${LIBRARY_NAME} PROPERTIES
+    PREFIX "lib"
+    OUTPUT_NAME "canvasnative"
+)

@@ -1,5 +1,5 @@
 /**
- * @import { RenderingContext2D } from '../src/renderingContext2d.ts';
+ * @import { RenderingContext2D } from '../src/api/renderingContext2d.ts';
  */
 
 /**

@@ -1,5 +1,4 @@
 import { createCanvas, requestAnimationFrame } from '../mod.ts';
-console.log('ww');
 
 const {
   ctx,
@@ -83,4 +82,3 @@ function draw(t: number) {
 }
 
 requestAnimationFrame(draw);
-console.log('work');

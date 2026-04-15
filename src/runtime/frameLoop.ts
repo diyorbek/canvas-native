@@ -1,4 +1,4 @@
-import { DrawCommandBuffer } from './drawCommandBuffer.ts';
+import { DrawCommandBuffer } from '../commands/buffer.ts';
 
 // --- Shared frame buffer ---
 // Received from main thread via initFrameLoop(sab).

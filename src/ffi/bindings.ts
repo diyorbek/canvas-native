@@ -1,4 +1,8 @@
-export const ffi = Deno.dlopen('./build/libcanvasnative.dylib', {
+import { resolveLibPath } from './loadLib.ts';
+
+const libPath = await resolveLibPath();
+
+export const ffi = Deno.dlopen(libPath, {
   create_window: {
     parameters: ['i32', 'i32', 'buffer'],
     result: 'pointer',

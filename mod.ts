@@ -1,9 +1,9 @@
 /// <reference lib="deno.ns" />
 
-import { initFrameLoop } from './src/frameLoop.ts';
-import { getContext, requestAnimationFrame } from './src/canvas.ts';
-import { Image } from './src/image.ts';
-import { RenderingContext2D } from './src/renderingContext2d.ts';
+import { Image } from './src/api/image.ts';
+import { RenderingContext2D } from './src/api/renderingContext2d.ts';
+import { getContext, requestAnimationFrame } from './src/runtime/canvas.ts';
+import { initFrameLoop } from './src/runtime/frameLoop.ts';
 import { stringToBuffer } from './src/utils.ts';
 
 export { Image, RenderingContext2D, requestAnimationFrame };
@@ -14,19 +14,37 @@ interface CanvasHandle {
   height: number;
 }
 
-const isWorker = typeof WorkerGlobalScope !== 'undefined';
+const isWorker = 'WorkerGlobalScope' in globalThis;
 
-// ---------------------------------------------------------------------------
-// Main thread: spawn the user's script as a worker, wait for canvas params
-// ---------------------------------------------------------------------------
-if (!isWorker) {
-  const { ffi } = await import('./src/ffi.ts');
+/**
+ * Single-file API entry point.
+ *
+ * On the main thread: spawns the script as a Web Worker, waits for the worker
+ * to call createCanvas, then creates the native window and enters the SDL
+ * event loop (which blocks the main thread until the window closes).
+ *
+ * On the worker thread: signals the main thread to create the window with
+ * the given params, then returns a RenderingContext2D.
+ */
+export function createCanvas(
+  width: number,
+  height: number,
+  title: string = 'Canvas',
+): Promise<CanvasHandle> {
+  if (!isWorker) {
+    return mainThreadCreateCanvas();
+  }
+  return workerThreadCreateCanvas(width, height, title);
+}
 
+function mainThreadCreateCanvas(): Promise<CanvasHandle> {
+  // Spawn the worker (the same script) and wait for it to call createCanvas.
   const worker = new Worker(Deno.mainModule, { type: 'module' });
 
-  worker.addEventListener('message', (e: MessageEvent) => {
+  worker.addEventListener('message', async (e: MessageEvent) => {
     if (e.data?.type !== 'create') return;
 
+    const { ffi } = await import('./src/ffi/bindings.ts');
     const { width, height, title } = e.data as {
       width: number;
       height: number;
@@ -60,22 +78,19 @@ if (!isWorker) {
       Deno.exit(0);
     }
   });
+
+  // The returned promise never resolves on the main thread — the SDL loop
+  // above blocks synchronously and Deno.exit(0) kills the process when it
+  // ends. This keeps the event loop busy so Deno doesn't flag the
+  // top-level await as unresolved.
+  return new Promise(() => {});
 }
 
-// createCanvas — only meaningful in the worker
-export function createCanvas(
+function workerThreadCreateCanvas(
   width: number,
   height: number,
-  title: string = 'Canvas',
+  title: string,
 ): Promise<CanvasHandle> {
-  if (!isWorker) {
-    // Main thread should never reach user code after import,
-    // but if it does, hang forever as a safety measure.
-    // This throws "top level await promise never resolved" error.
-    // To mitigate this we call Deno.exit(0) immediately after main render loop ends.
-    return new Promise(() => {});
-  }
-
   return new Promise<CanvasHandle>((resolve) => {
     const handler = (e: MessageEvent) => {
       if (e.data?.type === 'frame_sab') {

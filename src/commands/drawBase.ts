@@ -1,6 +1,6 @@
 // !!! DO NOT EDIT !!! AUTO GENERATED !!!
 // prettier-ignore
-import { DrawCommand, DrawCommandBuffer } from "./drawCommandBuffer.ts";
+import { DrawCommand, DrawCommandBuffer } from "./buffer.ts";
 
 export class DrawCommandsBase {
   static arc(

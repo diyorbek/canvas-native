@@ -4,6 +4,7 @@ export const DEFAULT_FONT_PATH =
   Deno.build.os === 'darwin' ? '/System/Library/Fonts/Helvetica.ttc' : '';
 
 export enum MessageType {
+  READY,
   INIT,
 }
 

@@ -1,4 +1,4 @@
-import { ffi } from './ffi.ts';
+import { ffi } from '../ffi/bindings.ts';
 
 // Reusable buffers — no allocation per call
 const argsBuffer = new Float32Array(16);

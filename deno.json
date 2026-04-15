@@ -1,0 +1,29 @@
+{
+  "name": "@diyorbek/canvas-native",
+  "version": "0.1.0",
+  "license": "MIT",
+  "exports": {
+    ".": "./mod.ts",
+    "./app": "./canvas-native.ts",
+    "./worker": "./src/canvas.ts"
+  },
+  "publish": {
+    "include": [
+      "mod.ts",
+      "canvas-native.ts",
+      "src/**/*.ts",
+      "deno.json",
+      "LICENSE",
+      "README.md"
+    ],
+    "exclude": [
+      "demos",
+      "tests",
+      "native",
+      "build",
+      "scripts",
+      "CMakeLists.txt",
+      ".github"
+    ]
+  }
+}

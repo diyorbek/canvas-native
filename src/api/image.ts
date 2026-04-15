@@ -1,6 +1,6 @@
-import { ffi } from './ffi.ts';
-import { createImage, createImageFromMemory } from './syncCall.ts';
-import { imageBufferFromDataUrl, isFileUrl, stringToBuffer } from './utils.ts';
+import { createImage, createImageFromMemory } from '../commands/sync.ts';
+import { ffi } from '../ffi/bindings.ts';
+import { imageBufferFromDataUrl, isFileUrl, stringToBuffer } from '../utils.ts';
 
 const DEFAULT_IMAGE_FLAGS = 0x01 | 0x20; // GENERATE_MIPMAPS | NEAREST
 

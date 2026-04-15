@@ -1,4 +1,4 @@
-import { ffi } from './ffi.ts';
+import { ffi } from '../ffi/bindings.ts';
 
 export class DrawCommandBuffer {
   private static cmdBuffer = new Float32Array(2 ** 16);

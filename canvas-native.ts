@@ -1,7 +1,7 @@
 /// <reference lib="deno.ns" />
 
 import { MessageType } from './src/constants.ts';
-import { ffi } from './src/ffi.ts';
+import { ffi } from './src/ffi/bindings.ts';
 import { stringToBuffer } from './src/utils.ts';
 
 // Shared frame buffer — allocated on main thread, transferred to worker.
@@ -15,18 +15,22 @@ const counterView = new Int32Array(sab, 0, 1);
 const tsView = new Float64Array(sab, 8, 1);
 
 async function spawnWorker(path: string) {
-  const workerSignal = Promise.withResolvers();
+  const workerReady = Promise.withResolvers<void>();
   const workerPath = new URL(path, Deno.mainModule).href;
 
   const worker = new Worker(workerPath, { type: 'module' });
 
-  // Transfer SAB to worker before it starts waiting
-  worker.postMessage({ type: MessageType.INIT, sab });
+  // Wait for the worker to signal READY before posting INIT.
+  // The worker's top-level code doesn't run until all its imports (including
+  // ffi.ts's top-level await) resolve — posting INIT eagerly would race that.
   worker.addEventListener('message', (e) => {
-    workerSignal.resolve(e.data);
+    if (e.data?.type === MessageType.READY) {
+      worker.postMessage({ type: MessageType.INIT, sab });
+      workerReady.resolve();
+    }
   });
 
-  await workerSignal.promise;
+  await workerReady.promise;
 
   return worker;
 }

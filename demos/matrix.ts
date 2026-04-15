@@ -1,4 +1,4 @@
-import { initCanvas, requestAnimationFrame } from '../src/canvas.ts';
+import { initCanvas, requestAnimationFrame } from '../src/runtime/canvas.ts';
 
 const ctx = await initCanvas();
 const W = 800;

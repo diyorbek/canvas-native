@@ -1,10 +1,10 @@
 /// <reference lib="dom" />
 
-import { DEFAULT_FONT_PATH } from './constants.ts';
-import { DrawCommands } from './drawCommands.ts';
+import { DrawCommands } from '../commands/draw.ts';
+import { createFont } from '../commands/sync.ts';
+import { DEFAULT_FONT_PATH } from '../constants.ts';
+import { parseColorString, parseCSSFontString } from '../utils.ts';
 import { Image } from './image.ts';
-import { createFont } from './syncCall.ts';
-import { parseColorString, parseCSSFontString } from './utils.ts';
 
 enum NVGwinding {
   NVG_CCW = 1,

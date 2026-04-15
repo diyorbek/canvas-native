@@ -3,6 +3,11 @@ project(canvas-native)
 
 set(CMAKE_CXX_STANDARD 23)
 
+# Build all static-library dependencies as position-independent code so they
+# can be linked into our shared library on Linux (required by ld). macOS/Windows
+# don't need this but it's harmless there.
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
 include(FetchContent)
 
 # SDL3

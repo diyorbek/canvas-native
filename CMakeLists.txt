@@ -10,7 +10,11 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 include(FetchContent)
 
-# SDL3
+# SDL3 — build as a static library so we can link it into our shared library
+# and ship a single, self-contained dylib/so/dll.
+set(SDL_SHARED OFF CACHE BOOL "" FORCE)
+set(SDL_STATIC ON CACHE BOOL "" FORCE)
+set(SDL_TEST_LIBRARY OFF CACHE BOOL "" FORCE)
 FetchContent_Declare(
     SDL3
     GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
@@ -58,7 +62,7 @@ add_executable(${PROJECT_NAME}
     native/nvg_gl_impl.cpp
 )
 target_include_directories(${PROJECT_NAME} PRIVATE ${COMMON_INCLUDES})
-target_link_libraries(${PROJECT_NAME} SDL3::SDL3 glad nanovg)
+target_link_libraries(${PROJECT_NAME} SDL3::SDL3-static glad nanovg)
 
 # shared library
 set(LIBRARY_NAME canvasnative)
@@ -79,7 +83,7 @@ add_library(${LIBRARY_NAME} SHARED
     native/dispatcher/dispatcher_sync.cpp
 )
 target_include_directories(${LIBRARY_NAME} PRIVATE ${COMMON_INCLUDES})
-target_link_libraries(${LIBRARY_NAME} SDL3::SDL3 glad nanovg)
+target_link_libraries(${LIBRARY_NAME} SDL3::SDL3-static glad nanovg)
 
 # Force consistent output name across all toolchains.
 # Without this, MSVC produces `canvasnative.dll` while MinGW/clang produce

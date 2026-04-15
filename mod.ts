@@ -14,6 +14,20 @@ interface CanvasHandle {
 
 const isWorker = 'WorkerGlobalScope' in globalThis;
 
+// Narrow worker-global typing; see src/runtime/canvas.ts for rationale.
+interface WorkerSelf {
+  postMessage(message: unknown): void;
+  addEventListener(
+    type: 'message',
+    listener: (event: MessageEvent) => void,
+  ): void;
+  removeEventListener(
+    type: 'message',
+    listener: (event: MessageEvent) => void,
+  ): void;
+}
+const workerSelf = self as unknown as WorkerSelf;
+
 /**
  * Single-file API entry point.
  *
@@ -92,7 +106,7 @@ function workerThreadCreateCanvas(
   return new Promise<CanvasHandle>((resolve) => {
     const handler = (e: MessageEvent) => {
       if (e.data?.type === 'frame_sab') {
-        self.removeEventListener('message', handler);
+        workerSelf.removeEventListener('message', handler);
         initFrameLoop(e.data.sab as SharedArrayBuffer);
         resolve({
           ctx: getContext(),
@@ -101,9 +115,9 @@ function workerThreadCreateCanvas(
         });
       }
     };
-    self.addEventListener('message', handler);
+    workerSelf.addEventListener('message', handler);
 
     // Tell main thread to create the window with these params
-    self.postMessage({ type: 'create', width, height, title });
+    workerSelf.postMessage({ type: 'create', width, height, title });
   });
 }

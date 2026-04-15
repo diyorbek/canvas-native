@@ -1,10 +1,27 @@
-/// <reference lib="dom" />
-
 import { DrawCommands } from '../commands/draw.ts';
 import { createFont } from '../commands/sync.ts';
 import { DEFAULT_FONT_PATH } from '../constants.ts';
 import { parseColorString, parseCSSFontString } from '../utils.ts';
 import type { Image } from './image.ts';
+import type {
+  CanvasDirection,
+  CanvasFontKerning,
+  CanvasFontStretch,
+  CanvasFontVariantCaps,
+  CanvasGradient,
+  CanvasImageSource,
+  CanvasLineCap,
+  CanvasLineJoin,
+  CanvasPattern,
+  CanvasRenderingContext2DSettings,
+  CanvasTextAlign,
+  CanvasTextBaseline,
+  CanvasTextRendering,
+  DOMPointInit,
+  GlobalCompositeOperation,
+  ImageSmoothingQuality,
+  TextMetrics,
+} from './types.ts';
 
 enum NVGwinding {
   NVG_CCW = 1,
@@ -130,12 +147,7 @@ function getNvgCompositeOperation(operation: GlobalCompositeOperation): number {
   }
 }
 
-type SlimCanvasRenderingContext2D = Omit<
-  CanvasRenderingContext2D,
-  'canvas' | 'drawImage' | 'filter' | 'getTransform' | 'lang'
->;
-
-export class RenderingContext2D implements SlimCanvasRenderingContext2D {
+export class RenderingContext2D {
   #defaultFontHandle: number;
 
   #direction: CanvasDirection = 'ltr';

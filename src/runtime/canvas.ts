@@ -5,6 +5,22 @@ import { initFrameLoop, requestAnimationFrame } from './frameLoop.ts';
 export { requestAnimationFrame };
 export type { RenderingContext2D };
 
+// Narrow view of the worker global. We can't use `/// <reference lib="webworker" />`
+// (JSR forbids it — leaks globals to consumers) and `self` is typed as Window
+// by default without the DOM lib, which lacks postMessage in its worker sense.
+interface WorkerSelf {
+  postMessage(message: unknown): void;
+  addEventListener(
+    type: 'message',
+    listener: (event: MessageEvent) => void,
+  ): void;
+  removeEventListener(
+    type: 'message',
+    listener: (event: MessageEvent) => void,
+  ): void;
+}
+const workerSelf = self as unknown as WorkerSelf;
+
 let instance: RenderingContext2D | null = null;
 
 export function getContext(): RenderingContext2D {
@@ -31,14 +47,14 @@ export function initCanvas(): Promise<RenderingContext2D> {
   return new Promise<RenderingContext2D>((resolve) => {
     const handler = (e: MessageEvent) => {
       if (e.data?.type === MessageType.INIT) {
-        self.removeEventListener('message', handler);
+        workerSelf.removeEventListener('message', handler);
         initFrameLoop(e.data.sab as SharedArrayBuffer);
         resolve(getContext());
       }
     };
-    self.addEventListener('message', handler);
+    workerSelf.addEventListener('message', handler);
 
     // Signal to main thread that we're ready to receive INIT.
-    self.postMessage({ type: MessageType.READY });
+    workerSelf.postMessage({ type: MessageType.READY });
   });
 }

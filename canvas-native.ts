@@ -38,7 +38,7 @@ export async function createWindow(
   height: number,
   title: string,
   workerPath: string,
-) {
+): Promise<{ mainLoop: () => void }> {
   ffi.symbols.create_window(width, height, stringToBuffer(title));
 
   const worker = await spawnWorker(workerPath);

@@ -4,7 +4,7 @@ import { DrawCommands } from '../commands/draw.ts';
 import { createFont } from '../commands/sync.ts';
 import { DEFAULT_FONT_PATH } from '../constants.ts';
 import { parseColorString, parseCSSFontString } from '../utils.ts';
-import { Image } from './image.ts';
+import type { Image } from './image.ts';
 
 enum NVGwinding {
   NVG_CCW = 1,
@@ -171,14 +171,14 @@ export class RenderingContext2D implements SlimCanvasRenderingContext2D {
     DrawCommands.fillColor(r, g, b, a);
   }
 
-  get direction() {
+  get direction(): CanvasDirection {
     return this.#direction;
   }
   set direction(_value: CanvasDirection) {
     throw new Error('Not implemented.');
   }
 
-  get fillStyle() {
+  get fillStyle(): string | CanvasGradient | CanvasPattern {
     return this.#fillStyle;
   }
   set fillStyle(value: string | CanvasGradient | CanvasPattern) {
@@ -190,7 +190,7 @@ export class RenderingContext2D implements SlimCanvasRenderingContext2D {
     DrawCommands.fillColor(r, g, b, a);
   }
 
-  get font() {
+  get font(): string {
     return this.#font;
   }
   set font(value: string) {
@@ -201,28 +201,28 @@ export class RenderingContext2D implements SlimCanvasRenderingContext2D {
     DrawCommands.fontSize(font.size);
   }
 
-  get fontKerning() {
+  get fontKerning(): CanvasFontKerning {
     return this.#fontKerning;
   }
   set fontKerning(_value: CanvasFontKerning) {
     throw new Error('Not implemented.');
   }
 
-  get fontStretch() {
+  get fontStretch(): CanvasFontStretch {
     return this.#fontStretch;
   }
   set fontStretch(_value: CanvasFontStretch) {
     throw new Error('Not implemented.');
   }
 
-  get fontVariantCaps() {
+  get fontVariantCaps(): CanvasFontVariantCaps {
     return this.#fontVariantCaps;
   }
   set fontVariantCaps(_value: CanvasFontVariantCaps) {
     throw new Error('Not implemented.');
   }
 
-  get globalAlpha() {
+  get globalAlpha(): number {
     return this.#globalAlpha;
   }
   set globalAlpha(value: number) {
@@ -230,7 +230,7 @@ export class RenderingContext2D implements SlimCanvasRenderingContext2D {
     DrawCommands.globalAlpha(value);
   }
 
-  get globalCompositeOperation() {
+  get globalCompositeOperation(): GlobalCompositeOperation {
     return this.#globalCompositeOperation;
   }
   set globalCompositeOperation(value: GlobalCompositeOperation) {
@@ -238,21 +238,21 @@ export class RenderingContext2D implements SlimCanvasRenderingContext2D {
     DrawCommands.globalCompositeOperation(getNvgCompositeOperation(value));
   }
 
-  get imageSmoothingEnabled() {
+  get imageSmoothingEnabled(): boolean {
     return this.#imageSmoothingEnabled;
   }
   set imageSmoothingEnabled(_value: boolean) {
     throw new Error('Not implemented.');
   }
 
-  get imageSmoothingQuality() {
+  get imageSmoothingQuality(): ImageSmoothingQuality {
     return this.#imageSmoothingQuality;
   }
   set imageSmoothingQuality(_value: ImageSmoothingQuality) {
     throw new Error('Not implemented.');
   }
 
-  get letterSpacing() {
+  get letterSpacing(): string {
     return this.#letterSpacing;
   }
   set letterSpacing(value: string) {
@@ -260,7 +260,7 @@ export class RenderingContext2D implements SlimCanvasRenderingContext2D {
     DrawCommands.textLetterSpacing(parseFloat(value));
   }
 
-  get lineCap() {
+  get lineCap(): CanvasLineCap {
     return this.#lineCap;
   }
   set lineCap(value: CanvasLineCap) {
@@ -268,14 +268,14 @@ export class RenderingContext2D implements SlimCanvasRenderingContext2D {
     DrawCommands.lineCap(getNvgLineCap(value));
   }
 
-  get lineDashOffset() {
+  get lineDashOffset(): number {
     return this.#lineDashOffset;
   }
   set lineDashOffset(_value: number) {
     throw new Error('Not implemented.');
   }
 
-  get lineJoin() {
+  get lineJoin(): CanvasLineJoin {
     return this.#lineJoin;
   }
   set lineJoin(value: CanvasLineJoin) {
@@ -283,7 +283,7 @@ export class RenderingContext2D implements SlimCanvasRenderingContext2D {
     DrawCommands.lineJoin(getNvgLineJoin(value));
   }
 
-  get lineWidth() {
+  get lineWidth(): number {
     return this.#lineWidth;
   }
   set lineWidth(value: number) {
@@ -291,7 +291,7 @@ export class RenderingContext2D implements SlimCanvasRenderingContext2D {
     DrawCommands.strokeWidth(value);
   }
 
-  get miterLimit() {
+  get miterLimit(): number {
     return this.#miterLimit;
   }
   set miterLimit(value: number) {
@@ -299,35 +299,35 @@ export class RenderingContext2D implements SlimCanvasRenderingContext2D {
     DrawCommands.miterLimit(value);
   }
 
-  get shadowBlur() {
+  get shadowBlur(): number {
     return this.#shadowBlur;
   }
   set shadowBlur(_value: number) {
     throw new Error('Not implemented.');
   }
 
-  get shadowColor() {
+  get shadowColor(): string {
     return this.#shadowColor;
   }
   set shadowColor(_value: string) {
     throw new Error('Not implemented.');
   }
 
-  get shadowOffsetX() {
+  get shadowOffsetX(): number {
     return this.#shadowOffsetX;
   }
   set shadowOffsetX(_value: number) {
     throw new Error('Not implemented.');
   }
 
-  get shadowOffsetY() {
+  get shadowOffsetY(): number {
     return this.#shadowOffsetY;
   }
   set shadowOffsetY(_value: number) {
     throw new Error('Not implemented.');
   }
 
-  get strokeStyle() {
+  get strokeStyle(): string | CanvasGradient | CanvasPattern {
     return this.#strokeStyle;
   }
   set strokeStyle(value: string | CanvasGradient | CanvasPattern) {
@@ -337,7 +337,7 @@ export class RenderingContext2D implements SlimCanvasRenderingContext2D {
     DrawCommands.strokeColor(r, g, b, a);
   }
 
-  get textAlign() {
+  get textAlign(): CanvasTextAlign {
     return this.#textAlign;
   }
   set textAlign(value: CanvasTextAlign) {
@@ -345,7 +345,7 @@ export class RenderingContext2D implements SlimCanvasRenderingContext2D {
     DrawCommands.textAlign(getNvgAlign(value));
   }
 
-  get textBaseline() {
+  get textBaseline(): CanvasTextBaseline {
     return this.#textBaseline;
   }
   set textBaseline(value: CanvasTextBaseline) {
@@ -353,14 +353,14 @@ export class RenderingContext2D implements SlimCanvasRenderingContext2D {
     DrawCommands.textAlign(getNvgBaseline(value));
   }
 
-  get textRendering() {
+  get textRendering(): CanvasTextRendering {
     return this.#textRendering;
   }
   set textRendering(_value: CanvasTextRendering) {
     throw new Error('Not implemented.');
   }
 
-  get wordSpacing() {
+  get wordSpacing(): string {
     return this.#wordSpacing;
   }
   set wordSpacing(_value: string) {

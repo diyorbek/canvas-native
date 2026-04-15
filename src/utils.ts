@@ -1,4 +1,4 @@
-import { decodeBase64 } from 'jsr:@std/encoding@1.0.10/base64';
+import { decodeBase64 } from '@std/encoding/base64';
 import { NAMED_COLORS_MAP, type RGBAColor } from './constants.ts';
 
 export function stringToBuffer(text: string): BufferSource {

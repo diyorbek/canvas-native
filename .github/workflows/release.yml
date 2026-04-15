@@ -40,14 +40,17 @@ jobs:
 
       - name: Install Linux deps
         if: startsWith(matrix.os, 'ubuntu')
+        # SDL3 build deps — see https://wiki.libsdl.org/SDL3/README-linux
         run: |
           sudo apt-get update
           sudo apt-get install -y \
-            cmake ninja-build \
-            libgl1-mesa-dev libx11-dev libxext-dev libxrandr-dev \
-            libxcursor-dev libxi-dev libxinerama-dev libxss-dev \
-            libwayland-dev libxkbcommon-dev libasound2-dev libpulse-dev \
-            libdbus-1-dev libudev-dev libibus-1.0-dev
+            cmake ninja-build pkg-config \
+            libgl1-mesa-dev libegl1-mesa-dev libgles2-mesa-dev \
+            libx11-dev libxext-dev libxrandr-dev libxcursor-dev \
+            libxi-dev libxinerama-dev libxss-dev libxtst-dev libxfixes-dev \
+            libwayland-dev libxkbcommon-dev libdrm-dev libgbm-dev \
+            libasound2-dev libpulse-dev libdbus-1-dev libudev-dev \
+            libibus-1.0-dev
 
       - name: Set up MSVC (Windows)
         if: startsWith(matrix.os, 'windows')
@@ -56,9 +59,11 @@ jobs:
           arch: ${{ matrix.target == 'windows-arm64' && 'arm64' || 'x64' }}
 
       - name: Configure
+        shell: bash
         run: cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_POLICY_VERSION_MINIMUM=3.5 ${{ matrix.cmake-extra }}
 
       - name: Build
+        shell: bash
         run: cmake --build build --target canvasnative --config Release
 
       - name: Rename artifact

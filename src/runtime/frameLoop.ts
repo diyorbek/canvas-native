@@ -1,7 +1,9 @@
 import { DrawCommandBuffer } from '../commands/buffer.ts';
 
 // --- Shared frame buffer ---
-// Main thread writes timestamp + increments counter each frame after SwapWindow.
+// Allocated by the worker (single-file API) or by main (two-file API), and
+// handed to this module via initFrameLoop(sab). Main thread writes timestamp
+// + increments counter each frame after SwapWindow.
 // Layout (16 bytes):
 //   [0..3]  uint32  frame counter — Atomics.wait() target
 //   [4..7]  padding

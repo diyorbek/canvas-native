@@ -21,6 +21,18 @@ const isWorker =
   'WorkerGlobalScope' in globalThis ||
   (typeof Bun !== 'undefined' && !Bun.isMainThread);
 
+/**
+ * Single-file API entry point.
+ *
+ * On the main thread: spawns the script as a Web Worker and waits for the
+ * worker to call createCanvas. When it does, creates the native window with
+ * the params (and SAB) the worker sent, then enters the SDL event loop
+ * (which blocks the main thread until the window closes).
+ *
+ * On the worker thread: creates the shared frame buffer, starts the frame
+ * loop, signals the main thread to create the window with the given params,
+ * and returns a RenderingContext2D.
+ */
 export function createCanvas(
   width: number,
   height: number,
@@ -33,6 +45,8 @@ export function createCanvas(
 }
 
 function mainThreadCreateCanvas(): Promise<CanvasHandle> {
+  // Spawn the same script as a worker and wait for it to call createCanvas.
+  // Deno.mainModule is already a file:// URL; Bun.main is a plain path.
   const mainModule =
     typeof Deno !== 'undefined' ? Deno.mainModule : `file://${Bun.main}`;
   const worker = new Worker(mainModule, { type: 'module' });
@@ -67,6 +81,11 @@ function mainThreadCreateCanvas(): Promise<CanvasHandle> {
     }
   });
 
+  // The returned promise never resolves on the main thread — start_main_loop
+  // above blocks synchronously inside the message handler, and process.exit(0)
+  // kills the process when it returns. The pending top-level await on the
+  // user's `await createCanvas(...)` is therefore covered by the busy event
+  // loop until process.exit fires, so neither runtime flags it as unresolved.
   return new Promise(() => {});
 }
 

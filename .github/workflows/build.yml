@@ -1,0 +1,92 @@
+name: Build
+
+on:
+  workflow_call:
+
+jobs:
+  lint:
+    name: Lint & Type Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - run: deno lint
+      - run: deno check mod.ts canvas-native.ts
+
+  build:
+    name: Build ${{ matrix.target }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-14
+            target: darwin-arm64
+            artifact: libcanvasnative.dylib
+          - os: ubuntu-24.04
+            target: linux-x64
+            artifact: libcanvasnative.so
+          - os: ubuntu-24.04-arm
+            target: linux-arm64
+            artifact: libcanvasnative.so
+          - os: windows-2022
+            target: windows-x64
+            artifact: libcanvasnative.dll
+          - os: windows-11-arm
+            target: windows-arm64
+            artifact: libcanvasnative.dll
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Linux deps
+        if: startsWith(matrix.os, 'ubuntu')
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            cmake ninja-build pkg-config \
+            libgl1-mesa-dev libegl1-mesa-dev libgles2-mesa-dev \
+            libx11-dev libxext-dev libxrandr-dev libxcursor-dev \
+            libxi-dev libxinerama-dev libxss-dev libxtst-dev libxfixes-dev \
+            libwayland-dev libxkbcommon-dev libdrm-dev libgbm-dev \
+            libasound2-dev libpulse-dev libdbus-1-dev libudev-dev \
+            libibus-1.0-dev
+
+      - name: Set up MSVC (Windows)
+        if: startsWith(matrix.os, 'windows')
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: ${{ matrix.target == 'windows-arm64' && 'arm64' || 'x64' }}
+
+      - name: Configure
+        shell: bash
+        run: cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_POLICY_VERSION_MINIMUM=3.5
+
+      - name: Build
+        shell: bash
+        run: cmake --build build --target canvasnative --config Release
+
+      - name: Set up Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Test FFI load
+        shell: bash
+        run: deno test --allow-ffi --allow-read --allow-env tests/ffi_test.ts
+
+      - name: Prepare artifact
+        shell: bash
+        run: |
+          cp build/${{ matrix.artifact }} ${{ matrix.artifact }}.${{ matrix.target }}
+          openssl dgst -sha256 ${{ matrix.artifact }}.${{ matrix.target }} | awk '{print $NF}' > ${{ matrix.artifact }}.${{ matrix.target }}.sha256
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.target }}
+          path: |
+            ${{ matrix.artifact }}.${{ matrix.target }}
+            ${{ matrix.artifact }}.${{ matrix.target }}.sha256

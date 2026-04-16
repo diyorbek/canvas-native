@@ -1,9 +1,15 @@
 import process from 'node:process';
 import { Image } from './src/api/image.ts';
 import { RenderingContext2D } from './src/api/renderingContext2d.ts';
-import { createFrameCallback, ffi } from './src/ffi/bindings.ts';
+import { ffi } from './src/ffi/bindings.ts';
 import { getContext, requestAnimationFrame } from './src/runtime/canvas.ts';
 import { initFrameLoop } from './src/runtime/frameLoop.ts';
+import {
+  createFrameSab,
+  getFrameSabViews,
+  getMainModule,
+  runMainLoop,
+} from './src/runtime/mainLoop.ts';
 import { stringToBuffer } from './src/utils.ts';
 
 export { Image, RenderingContext2D, requestAnimationFrame };
@@ -14,7 +20,7 @@ interface CanvasHandle {
   height: number;
 }
 
-declare const Bun: { main: string; isMainThread: boolean };
+declare const Bun: { isMainThread: boolean };
 
 // Deno exposes WorkerGlobalScope in workers. Bun doesn't — use Bun.isMainThread instead.
 const isWorker =
@@ -46,10 +52,7 @@ export function createCanvas(
 
 function mainThreadCreateCanvas(): Promise<CanvasHandle> {
   // Spawn the same script as a worker and wait for it to call createCanvas.
-  // Deno.mainModule is already a file:// URL; Bun.main is a plain path.
-  const mainModule =
-    typeof Deno !== 'undefined' ? Deno.mainModule : `file://${Bun.main}`;
-  const worker = new Worker(mainModule, { type: 'module' });
+  const worker = new Worker(getMainModule(), { type: 'module' });
 
   worker.addEventListener('message', (e: MessageEvent) => {
     if (e.data?.type !== 'create') return;
@@ -63,25 +66,13 @@ function mainThreadCreateCanvas(): Promise<CanvasHandle> {
 
     ffi.symbols.create_window(width, height, stringToBuffer(title));
 
-    const counterView = new Int32Array(sab, 0, 1);
-    const tsView = new Float64Array(sab, 8, 1);
-
-    const frameCallback = createFrameCallback(() => {
-      tsView[0] = performance.now();
-      Atomics.add(counterView, 0, 1);
-      Atomics.notify(counterView, 0, 1);
-    });
-
-    try {
-      ffi.symbols.start_main_loop(frameCallback.ptr);
-    } finally {
+    runMainLoop(getFrameSabViews(sab), () => {
       worker.terminate();
-      frameCallback.close();
       process.exit(0);
-    }
+    });
   });
 
-  // The returned promise never resolves on the main thread — start_main_loop
+  // The returned promise never resolves on the main thread — runMainLoop
   // above blocks synchronously inside the message handler, and process.exit(0)
   // kills the process when it returns. The pending top-level await on the
   // user's `await createCanvas(...)` is therefore covered by the busy event
@@ -96,7 +87,7 @@ function workerThreadCreateCanvas(
 ): Promise<CanvasHandle> {
   // Worker creates the SAB and includes it in the 'create' message.
   // No main→worker message needed — both threads share the SAB immediately.
-  const sab = new SharedArrayBuffer(16);
+  const { sab } = createFrameSab();
   initFrameLoop(sab);
 
   // deno-lint-ignore no-explicit-any

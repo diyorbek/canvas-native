@@ -26,9 +26,6 @@
       ".github"
     ]
   },
-  "imports": {
-    "@std/encoding": "jsr:@std/encoding@^1.0.10"
-  },
   "lint": {
     "exclude": ["tests", "native", "build", "scripts"]
   }

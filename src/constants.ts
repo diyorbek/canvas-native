@@ -1,7 +1,9 @@
+import process from 'node:process';
+
 export type RGBAColor = [r: number, g: number, b: number, a: number];
 
 export const DEFAULT_FONT_PATH =
-  Deno.build.os === 'darwin' ? '/System/Library/Fonts/Helvetica.ttc' : '';
+  process.platform === 'darwin' ? '/System/Library/Fonts/Helvetica.ttc' : '';
 
 export enum MessageType {
   READY,

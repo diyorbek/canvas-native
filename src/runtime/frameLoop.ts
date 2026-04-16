@@ -1,8 +1,9 @@
 import { DrawCommandBuffer } from '../commands/buffer.ts';
 
 // --- Shared frame buffer ---
-// Received from main thread via initFrameLoop(sab).
-// Main thread writes timestamp + increments counter each frame after SwapWindow.
+// Allocated by the worker (single-file API) or by main (two-file API), and
+// handed to this module via initFrameLoop(sab). Main thread writes timestamp
+// + increments counter each frame after SwapWindow.
 // Layout (16 bytes):
 //   [0..3]  uint32  frame counter — Atomics.wait() target
 //   [4..7]  padding
@@ -13,7 +14,9 @@ let tsView: Float64Array;
 export function initFrameLoop(sab: SharedArrayBuffer): void {
   counterView = new Int32Array(sab, 0, 1);
   tsView = new Float64Array(sab, 8, 1);
-  rafLoop();
+  // Defer so createCanvas can resolve and user code can register rAF callbacks
+  // before the blocking loop takes over the thread.
+  setTimeout(rafLoop, 0);
 }
 
 // --- rAF queue ---
@@ -24,11 +27,11 @@ export function requestAnimationFrame(cb: RafCallback): void {
   nextRafQueue.push(cb);
 }
 
-function rafLoop(lastCounter: number = 0): void {
-  const waiter = Atomics.waitAsync(counterView, 0, lastCounter, 5);
+function rafLoop(): void {
+  while (true) {
+    const lastCounter = Atomics.load(counterView, 0);
+    Atomics.wait(counterView, 0, lastCounter, 5);
 
-  const tick = () => {
-    const currentCounter = Atomics.load(counterView, 0);
     const timestamp = tsView[0];
 
     DrawCommandBuffer.flush();
@@ -41,13 +44,5 @@ function rafLoop(lastCounter: number = 0): void {
     }
 
     DrawCommandBuffer.flush();
-    rafLoop(currentCounter);
-  };
-
-  if (waiter.async) {
-    waiter.value.then(tick);
-  } else {
-    // Counter already changed — process immediately and reschedule
-    tick();
   }
 }

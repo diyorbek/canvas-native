@@ -66,6 +66,15 @@ jobs:
         shell: bash
         run: cmake --build build --target canvasnative --config Release
 
+      - name: Set up Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Test FFI symbols
+        shell: bash
+        run: deno test --allow-ffi --allow-read --allow-env tests/ffi_test.ts
+
       - name: Rename artifact
         shell: bash
         run: |

@@ -7,7 +7,7 @@
 
 // --- Direct FFI functions (no NVG context needed) ---
 
-void image_info(const char* filePath, int* out) {
+CN_EXPORT void image_info(const char* filePath, int* out) {
   int comp;
   if (!stbi_info(filePath, &out[0], &out[1], &comp)) {
     out[0] = 0;
@@ -15,7 +15,8 @@ void image_info(const char* filePath, int* out) {
   }
 }
 
-void image_info_from_memory(const unsigned char* fileData, int dataSize,
+CN_EXPORT void image_info_from_memory(const unsigned char* fileData,
+                                      int dataSize,
                             int* out) {
   int comp;
   if (!stbi_info_from_memory(fileData, dataSize, &out[0], &out[1], &comp)) {

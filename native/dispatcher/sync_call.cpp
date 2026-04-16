@@ -13,9 +13,9 @@ static bool sync_call_result_ready     = false;
 // Called by JS worker thread.
 // Blocks until dispatcher thread writes result.
 // Caller's buffers stay valid because this function blocks until completion.
-extern "C" SyncCallResult sync_call(int32_t opcode, float* args, uint8_t* strs,
-                                    uint32_t arg_count, uint32_t str_len,
-                                    uint8_t* data, uint32_t data_len) {
+CN_EXPORT SyncCallResult sync_call(int32_t opcode, float* args, uint8_t* strs,
+                                   uint32_t arg_count, uint32_t str_len,
+                                   uint8_t* data, uint32_t data_len) {
   {
     std::lock_guard<std::mutex> lock(sync_call_mtx);
     sync_request = {opcode, args, strs, arg_count, str_len, data, data_len};

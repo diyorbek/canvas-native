@@ -4,11 +4,11 @@
 
 #include "nanovg.h"
 
-extern "C" {
-void image_info(const char* filePath, int* out);
-void image_info_from_memory(const unsigned char* fileData, int dataSize,
-                            int* out);
-}
+#include "../export.h"
+
+CN_EXPORT void image_info(const char* filePath, int* out);
+CN_EXPORT void image_info_from_memory(const unsigned char* fileData,
+                                      int dataSize, int* out);
 
 namespace nvg {
 // Draw commands (called via draw_cmd_map)

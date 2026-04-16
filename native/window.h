@@ -1,7 +1,7 @@
 #pragma once
 
-extern "C" {
-void* create_window(int width, int height, const char* title);
+#include "export.h"
 
-void start_main_loop(void (*frame_callback)());
-}
+CN_EXPORT void* create_window(int width, int height, const char* title);
+
+CN_EXPORT void start_main_loop(void (*frame_callback)());

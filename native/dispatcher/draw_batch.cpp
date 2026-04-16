@@ -7,9 +7,9 @@ static std::vector<float> draw_cmds;
 static std::vector<uint8_t> string_args;
 std::mutex draw_batch_mtx;
 
-extern "C" void submit_batch(float* cmd_buf, uint32_t cmd_buf_length,
-                             uint8_t* string_args_buf,
-                             uint32_t string_args_buf_length) {
+CN_EXPORT void submit_batch(float* cmd_buf, uint32_t cmd_buf_length,
+                            uint8_t* string_args_buf,
+                            uint32_t string_args_buf_length) {
   std::lock_guard<std::mutex> lock(draw_batch_mtx);
   draw_cmds.insert(draw_cmds.end(), cmd_buf, cmd_buf + cmd_buf_length);
   string_args.insert(string_args.end(), string_args_buf,

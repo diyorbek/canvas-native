@@ -11,7 +11,7 @@
 #include "dispatcher/dispatcher_sync.h"
 #include "window_state.h"
 
-void* create_window(int width, int height, const char* title) {
+CN_EXPORT void* create_window(int width, int height, const char* title) {
   SDL_Init(SDL_INIT_VIDEO);
 
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
@@ -75,7 +75,7 @@ void composite_canvas_frame() {
   nvgEndFrame(window_state.main_nvg);
 }
 
-void start_main_loop(void (*frame_callback)()) {
+CN_EXPORT void start_main_loop(void (*frame_callback)()) {
   SDL_Window* window = window_state.window;
 
   bool quit = false;

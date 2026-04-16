@@ -1,4 +1,5 @@
-import { decodeBase64 } from '@std/encoding/base64';
+import { Buffer } from 'node:buffer';
+import { statSync } from 'node:fs';
 import { NAMED_COLORS_MAP, type RGBAColor } from './constants.ts';
 
 export function stringToBuffer(text: string): BufferSource {
@@ -45,7 +46,7 @@ export function imageBufferFromDataUrl(data: string) {
     const isBase64 = data.lastIndexOf('base64', comma) !== -1;
     const content = data.slice(comma + 1);
     const buffer = isBase64
-      ? (decodeBase64(content) as Uint8Array) // type casting as decodeBase64 returns internal type "Uint8Array_"
+      ? Uint8Array.from(Buffer.from(content, 'base64'))
       : new TextEncoder().encode(content);
 
     const mimeType = data.substring(data.indexOf(':') + 1, data.indexOf(';'));
@@ -58,8 +59,8 @@ export function imageBufferFromDataUrl(data: string) {
 
 export function isFileUrl(str: string): boolean {
   try {
-    return Deno.statSync(str).isFile;
-  } catch (_error) {
+    return statSync(str).isFile();
+  } catch {
     return false;
   }
 }

@@ -4,7 +4,7 @@ const {
   ctx,
   width: W,
   height: H,
-} = await createCanvas(800, 500, 'Bouncing Balls');
+} = await createCanvas(300, 200, 'Bouncing Balls');
 
 const balls: {
   x: number;

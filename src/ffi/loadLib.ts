@@ -13,9 +13,6 @@ function getTarget(): { name: string; filename: string } {
   if (os === 'darwin' && arch === 'aarch64') {
     return { name: 'darwin-arm64', filename: 'libcanvasnative.dylib' };
   }
-  if (os === 'darwin' && arch === 'x86_64') {
-    return { name: 'darwin-x64', filename: 'libcanvasnative.dylib' };
-  }
   if (os === 'linux' && arch === 'x86_64') {
     return { name: 'linux-x64', filename: 'libcanvasnative.so' };
   }

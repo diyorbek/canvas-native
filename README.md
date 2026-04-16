@@ -18,7 +18,7 @@ import {
 } from 'jsr:@diyorbek/canvas-native';
 ```
 
-Supported platforms: macOS (arm64, x64), Linux (x64, arm64), Windows (x64, arm64).
+Supported platforms: macOS (arm64), Linux (x64, arm64), Windows (x64, arm64).
 
 ### Native library resolution
 

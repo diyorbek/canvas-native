@@ -56,7 +56,6 @@ function mainThreadCreateCanvas(): Promise<CanvasHandle> {
       tsView[0] = performance.now();
       Atomics.add(counterView, 0, 1);
       Atomics.notify(counterView, 0, 1);
-      worker.postMessage('ping');
     });
 
     try {

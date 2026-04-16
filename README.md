@@ -49,25 +49,22 @@ Everything lives in one script — the library handles the window, event loop, a
 
 ```typescript
 // demo.ts
-import {
-  createCanvas,
-  requestAnimationFrame,
-} from 'jsr:@diyorbek/canvas-native';
+import { createCanvas, requestAnimationFrame } from 'jsr:@diyorbek/canvas-native';
 
-const { ctx, width, height } = await createCanvas(800, 500, 'My App');
+const { ctx, width, height } = await createCanvas(400, 300, 'Hello');
 
-let x = 0;
 function draw(t: number) {
   ctx.clearRect(0, 0, width, height);
 
-  ctx.fillStyle = '#f00';
-  ctx.fillRect(x, 100, 200, 150);
-  x = (x + 2) % width;
-
+  const r = 50 + Math.sin(t / 300) * 30;
   ctx.beginPath();
-  ctx.arc(width / 2, height / 2, 50, 0, Math.PI * 2);
-  ctx.fillStyle = '#00f';
+  ctx.arc(width / 2, height / 2, r, 0, Math.PI * 2);
+  ctx.fillStyle = 'tomato';
   ctx.fill();
+
+  ctx.fillStyle = 'black';
+  ctx.font = '16px sans-serif';
+  ctx.fillText('Hello, Canvas Native', 20, 30);
 
   requestAnimationFrame(draw);
 }

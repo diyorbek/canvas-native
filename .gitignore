@@ -1,2 +1,4 @@
 build
 .DS_Store
+tests/demo.js
+tests/test.html

@@ -41,11 +41,14 @@ jobs:
       - uses: denoland/setup-deno@v2
         with:
           deno-version: v2.x
-      - name: Set deno.json version from tag
+      - name: Verify tag matches deno.json version
         run: |
           TAG_VERSION="${GITHUB_REF_NAME#v}"
-          jq --arg v "$TAG_VERSION" '.version = $v' deno.json > deno.json.tmp
-          mv deno.json.tmp deno.json
-          echo "Publishing version $TAG_VERSION"
+          PKG_VERSION=$(jq -r '.version' deno.json)
+          if [ "$TAG_VERSION" != "$PKG_VERSION" ]; then
+            echo "Tag version ($TAG_VERSION) does not match deno.json ($PKG_VERSION)"
+            echo "Bump deno.json before tagging."
+            exit 1
+          fi
       - name: Publish to JSR
         run: deno publish

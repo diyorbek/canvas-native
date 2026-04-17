@@ -10,7 +10,7 @@ import {
   getMainModule,
   runMainLoop,
 } from './src/runtime/mainLoop.ts';
-import { stringToBuffer } from './src/utils.ts';
+import { isWorker, stringToBuffer } from './src/utils.ts';
 
 export { Image, RenderingContext2D, requestAnimationFrame };
 
@@ -19,13 +19,6 @@ interface CanvasHandle {
   width: number;
   height: number;
 }
-
-declare const Bun: { isMainThread: boolean };
-
-// Deno exposes WorkerGlobalScope in workers. Bun doesn't — use Bun.isMainThread instead.
-const isWorker =
-  'WorkerGlobalScope' in globalThis ||
-  (typeof Bun !== 'undefined' && !Bun.isMainThread);
 
 /**
  * Single-file API entry point.
@@ -44,7 +37,7 @@ export function createCanvas(
   height: number,
   title: string = 'Canvas',
 ): Promise<CanvasHandle> {
-  if (!isWorker) {
+  if (!isWorker()) {
     return mainThreadCreateCanvas();
   }
   return workerThreadCreateCanvas(width, height, title);

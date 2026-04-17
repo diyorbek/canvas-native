@@ -103,3 +103,13 @@ export function parseCSSFontString(str: string) {
     variant: font.variant,
   };
 }
+
+declare const Bun: { isMainThread: boolean };
+
+export function isWorker() {
+  // Deno exposes WorkerGlobalScope in workers. Bun doesn't — use Bun.isMainThread instead.
+  return (
+    'WorkerGlobalScope' in globalThis ||
+    (typeof Bun !== 'undefined' && !Bun.isMainThread)
+  );
+}

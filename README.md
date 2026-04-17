@@ -7,39 +7,7 @@ A 2D canvas rendering library for Deno that brings the HTML5 Canvas API to nativ
 - FFI bindings to native C++ library
 - Type-safe API with full TypeScript support
 
-## Installation
-
-Just import the library — the native binary is downloaded automatically on first run and cached locally.
-
-```typescript
-import {
-  createCanvas,
-  requestAnimationFrame,
-} from 'jsr:@diyorbek/canvas-native';
-```
-
 Supported platforms: macOS (arm64), Linux (x64, arm64), Windows (x64, arm64).
-
-### Native library resolution
-
-`canvas-native` looks for the native library in this order:
-
-1. `CANVAS_NATIVE_LIB` env var (absolute path to your own build)
-2. `./build/libcanvasnative.{dylib,so,dll}` in the current working directory (local dev builds)
-3. Cache directory — `~/Library/Caches/canvas-native/v<version>/` on macOS, `$XDG_CACHE_HOME/canvas-native/v<version>/` on Linux, `%LOCALAPPDATA%\canvas-native\v<version>\` on Windows
-4. Downloaded from [GitHub Releases](https://github.com/diyorbek/canvas-native/releases) (with SHA-256 checksum verification) and cached
-
-### Building from source (for development)
-
-Prerequisites: Deno, CMake 3.24+, a C++23 compiler.
-
-```bash
-git clone https://github.com/diyorbek/canvas-native
-cd canvas-native
-cmake -B build && cmake --build build --target canvasnative
-```
-
-The build output at `./build/libcanvasnative.*` is picked up automatically.
 
 ## Quick Start
 
@@ -49,7 +17,10 @@ Everything lives in one script — the library handles the window, event loop, a
 
 ```typescript
 // demo.ts
-import { createCanvas, requestAnimationFrame } from 'jsr:@diyorbek/canvas-native';
+import {
+  createCanvas,
+  requestAnimationFrame,
+} from 'jsr:@diyorbek/canvas-native';
 
 const { ctx, width, height } = await createCanvas(400, 300, 'Hello');
 
@@ -72,14 +43,16 @@ requestAnimationFrame(draw);
 ```
 
 ```bash
-deno run -A demo.ts
+# Bun
+bun demo.ts
+
+# Deno
+deno --allow-ffi --allow-env --allow-read demo.ts
 ```
 
 > ⚠️ **Heads-up: your script runs twice.**
 >
 > Internally, `createCanvas()` re-launches your script as a Web Worker — the main thread runs the native window loop, and the worker runs your drawing code. That means **any code at the top level of your file executes on both threads**, once on each.
->
-> In practice this is fine because `await createCanvas()` blocks the main thread forever, so user code _after_ that line only ever runs in the worker. Just follow this convention:
 >
 > ```typescript
 > // ✅ Safe — only imports and createCanvas() before the await
@@ -88,7 +61,6 @@ deno run -A demo.ts
 >   requestAnimationFrame,
 > } from 'jsr:@diyorbek/canvas-native';
 > const { ctx, width, height } = await createCanvas(800, 500, 'Demo');
->
 > // All your setup and drawing code goes here.
 > // It only runs in the worker.
 > ```
@@ -103,7 +75,7 @@ deno run -A demo.ts
 >
 > If you need full control and want to guarantee single-execution of setup code, use the two-file API below.
 
-### Two-file API (advanced)
+### Two-file API
 
 Use this when you need finer control over the main/worker split, or want to guarantee that setup code only runs once.
 
@@ -138,8 +110,36 @@ requestAnimationFrame(draw);
 ```
 
 ```bash
-deno run -A app.ts
+# Bun
+bun app.ts
+
+# Deno
+deno --allow-ffi --allow-env --allow-read app.ts
 ```
+
+## Building from source (for development)
+
+Prerequisites: Deno, CMake 3.24+, a C++23 compiler.
+
+```bash
+git clone https://github.com/diyorbek/canvas-native
+cd canvas-native
+cmake -B build && cmake --build build --target canvasnative
+```
+
+The build output at `./build/libcanvasnative.*` is picked up automatically.
+
+### Native library resolution
+
+`canvas-native` looks for the native library in this order:
+
+1. `CANVAS_NATIVE_LIB` env var (absolute path to your own build)
+2. `./build/libcanvasnative.{dylib,so,dll}` in the current working directory (local dev builds)
+3. Cache directory
+   - `~/Library/Caches/canvas-native/v<version>/` on macOS
+   - `$XDG_CACHE_HOME/canvas-native/v<version>/` on Linux
+   - `%LOCALAPPDATA%\canvas-native\v<version>\` on Windows
+4. Downloaded from [GitHub Releases](https://github.com/diyorbek/canvas-native/releases) (with SHA-256 checksum verification) and cached
 
 ## Limitations
 

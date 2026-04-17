@@ -15,7 +15,7 @@ let dirX = 1;
 let dirY = 1;
 
 function draw() {
-  ctx.clearRect(0, 0, 800, 500);
+  ctx.clearRect(0, 0, 600, 400);
 
   ctx.drawImage(img, 10, 10, 200, 100);
 
@@ -23,10 +23,10 @@ function draw() {
   ctx.fillRect(x, y, 100, 100);
 
   if (y <= 0) dirY = 1;
-  else if (y > 500 - 100) dirY = -1;
+  else if (y > 400 - 100) dirY = -1;
 
   if (x <= 0) dirX = 1;
-  else if (x > 800 - 100) dirX = -1;
+  else if (x > 600 - 100) dirX = -1;
 
   x += 0.1 * dirX;
   y += 0.1 * dirY;

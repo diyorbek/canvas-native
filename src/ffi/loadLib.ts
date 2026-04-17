@@ -1,4 +1,11 @@
-import { mkdir, readFile, rename, stat, unlink, writeFile } from 'node:fs/promises';
+import {
+  mkdir,
+  readFile,
+  rename,
+  stat,
+  unlink,
+  writeFile,
+} from 'node:fs/promises';
 import process from 'node:process';
 import denoJson from '../../deno.json' with { type: 'json' };
 
@@ -6,34 +13,50 @@ import denoJson from '../../deno.json' with { type: 'json' };
 const LIB_VERSION = denoJson.version;
 
 // Where to fetch prebuilt binaries from.
-const RELEASE_URL_BASE =
-  `https://github.com/diyorbek/canvas-native/releases/download/v${LIB_VERSION}`;
+const RELEASE_URL_BASE = `https://github.com/diyorbek/canvas-native/releases/download/v${LIB_VERSION}`;
 
 // Map Node's process.platform/arch to our target naming.
-const PLATFORM_MAP: Record<string, string> = { darwin: 'darwin', linux: 'linux', win32: 'windows' };
+const PLATFORM_MAP: Record<string, string> = {
+  darwin: 'darwin',
+  linux: 'linux',
+  win32: 'windows',
+};
 const ARCH_MAP: Record<string, string> = { arm64: 'aarch64', x64: 'x86_64' };
-const EXT_MAP: Record<string, string> = { darwin: 'dylib', linux: 'so', win32: 'dll' };
+const EXT_MAP: Record<string, string> = {
+  darwin: 'dylib',
+  linux: 'so',
+  win32: 'dll',
+};
 
 function getTarget(): { name: string; filename: string } {
   const os = PLATFORM_MAP[process.platform];
   const arch = ARCH_MAP[process.arch];
   const ext = EXT_MAP[process.platform];
+
   if (!os || !arch || !ext) {
-    throw new Error(`canvas-native: unsupported platform ${process.platform}/${process.arch}`);
+    throw new Error(
+      `canvas-native: unsupported platform ${process.platform}/${process.arch}`,
+    );
   }
 
-  const name = `${os}-${process.arch}`;
-  return { name, filename: `libcanvasnative.${ext}` };
+  return {
+    name: `${os}-${process.arch}`,
+    filename: `libcanvasnative.${ext}`,
+  };
 }
 
 function getCacheDir(): string {
   if (process.platform === 'win32') {
     const localAppData =
       process.env.LOCALAPPDATA ??
-      (process.env.USERPROFILE ? `${process.env.USERPROFILE}/AppData/Local` : null);
+      (process.env.USERPROFILE
+        ? `${process.env.USERPROFILE}/AppData/Local`
+        : null);
+
     if (!localAppData) {
       throw new Error('canvas-native: could not determine LOCALAPPDATA');
     }
+
     return `${localAppData}/canvas-native/v${LIB_VERSION}`;
   }
 
@@ -41,9 +64,11 @@ function getCacheDir(): string {
   if (!home) {
     throw new Error('canvas-native: could not determine home directory');
   }
+
   if (process.platform === 'darwin') {
     return `${home}/Library/Caches/canvas-native/v${LIB_VERSION}`;
   }
+
   const base = process.env.XDG_CACHE_HOME ?? `${home}/.cache`;
   return `${base}/canvas-native/v${LIB_VERSION}`;
 }

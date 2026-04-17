@@ -7,7 +7,6 @@ export const DEFAULT_FONT_PATH =
 
 export enum MessageType {
   READY,
-  INIT,
 }
 
 export const NAMED_COLORS_MAP: Record<string, RGBAColor> = {

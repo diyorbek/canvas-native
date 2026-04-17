@@ -9,6 +9,20 @@ A 2D canvas rendering library for Deno that brings the HTML5 Canvas API to nativ
 
 Supported platforms: macOS (arm64), Linux (x64, arm64), Windows (x64, arm64).
 
+## Install
+
+**Deno** — no install step; the examples below work as-is.
+
+**Bun** — Bun doesn't resolve `jsr:` specifiers natively, so install from JSR's npm proxy first:
+
+```bash
+bunx jsr add @diyorbek/canvas-native
+```
+
+Then drop the `jsr:` prefix from imports throughout the examples below — e.g. `'jsr:@diyorbek/canvas-native'` becomes `'@diyorbek/canvas-native'`.
+
+![demo](demos/demo.gif)
+
 ## Quick Start
 
 ### Single-file API (recommended)

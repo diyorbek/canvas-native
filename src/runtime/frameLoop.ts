@@ -1,4 +1,7 @@
 import { DrawCommandBuffer } from '../commands/buffer.ts';
+import { decodeEvent } from './eventDecoder.ts';
+import { dispatchCanvasEvent } from './eventDispatcher.ts';
+import { ffi } from '../ffi/bindings.ts';
 
 // --- Shared frame buffer ---
 // Allocated by the worker (single-file API) or by main (two-file API), and
@@ -19,6 +22,20 @@ export function initFrameLoop(sab: SharedArrayBuffer): void {
   setTimeout(rafLoop, 0);
 }
 
+// --- Event polling ---
+const MAX_EVENTS = 128;
+const EVENT_SIZE = 32;
+const eventBuf = new Uint8Array(MAX_EVENTS * EVENT_SIZE);
+const eventView = new DataView(eventBuf.buffer);
+
+function pollAndDispatch(): void {
+  const count = ffi.symbols.poll_events(eventBuf, MAX_EVENTS) as number;
+  for (let i = 0; i < count; i++) {
+    const event = decodeEvent(eventView, i * EVENT_SIZE);
+    if (event) dispatchCanvasEvent(event);
+  }
+}
+
 // --- rAF queue ---
 type RafCallback = (timestamp: number) => void;
 let nextRafQueue: RafCallback[] = [];
@@ -35,6 +52,9 @@ function rafLoop(): void {
     const timestamp = tsView[0];
 
     DrawCommandBuffer.flush();
+
+    // Poll input events before rAF callbacks so handlers see current-frame state
+    pollAndDispatch();
 
     const queue = nextRafQueue;
     nextRafQueue = [];

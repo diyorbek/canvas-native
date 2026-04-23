@@ -30,6 +30,10 @@ export const ffi = dlopen(libPath, {
     args: [t.ptr, t.i32, t.ptr],
     returns: t.void,
   },
+  poll_events: {
+    args: [t.ptr, t.i32],
+    returns: t.i32,
+  },
 });
 
 export interface FrameCallbackHandle {

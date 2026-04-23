@@ -1,8 +1,21 @@
 import process from 'node:process';
 import { Image } from './src/api/image.ts';
 import { RenderingContext2D } from './src/api/renderingContext2d.ts';
+import type {
+  CanvasEvent,
+  CanvasEventListener,
+  CanvasEventMap,
+  CanvasEventType,
+  CanvasKeyboardEvent,
+  CanvasMouseEvent,
+  CanvasWheelEvent,
+} from './src/api/types.ts';
 import { ffi } from './src/ffi/bindings.ts';
 import { getContext, requestAnimationFrame } from './src/runtime/canvas.ts';
+import {
+  addCanvasEventListener,
+  removeCanvasEventListener,
+} from './src/runtime/eventDispatcher.ts';
 import { initFrameLoop } from './src/runtime/frameLoop.ts';
 import {
   createFrameSab,
@@ -12,12 +25,33 @@ import {
 } from './src/runtime/mainLoop.ts';
 import { isWorker, stringToBuffer } from './src/utils.ts';
 
-export { Image, RenderingContext2D, requestAnimationFrame };
+export {
+  Image,
+  RenderingContext2D,
+  requestAnimationFrame,
+};
+export type {
+  CanvasEvent,
+  CanvasEventListener,
+  CanvasEventMap,
+  CanvasEventType,
+  CanvasKeyboardEvent,
+  CanvasMouseEvent,
+  CanvasWheelEvent,
+};
 
 interface CanvasHandle {
   ctx: RenderingContext2D;
   width: number;
   height: number;
+  addEventListener<K extends CanvasEventType>(
+    type: K,
+    listener: CanvasEventListener<CanvasEventMap[K]>,
+  ): void;
+  removeEventListener<K extends CanvasEventType>(
+    type: K,
+    listener: CanvasEventListener<CanvasEventMap[K]>,
+  ): void;
 }
 
 /**
@@ -90,5 +124,7 @@ function workerThreadCreateCanvas(
     ctx: getContext(),
     width,
     height,
+    addEventListener: addCanvasEventListener,
+    removeEventListener: removeCanvasEventListener,
   });
 }

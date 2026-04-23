@@ -8,6 +8,20 @@ import {
 } from './src/runtime/mainLoop.ts';
 import { stringToBuffer } from './src/utils.ts';
 
+export {
+  addEventListener,
+  removeEventListener,
+} from './src/runtime/canvas.ts';
+export type {
+  CanvasEvent,
+  CanvasEventListener,
+  CanvasEventMap,
+  CanvasEventType,
+  CanvasKeyboardEvent,
+  CanvasMouseEvent,
+  CanvasWheelEvent,
+} from './src/api/types.ts';
+
 function spawnWorker(path: string): Promise<{
   worker: Worker;
   frameSab: FrameSab;

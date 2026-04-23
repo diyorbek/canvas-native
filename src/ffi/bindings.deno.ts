@@ -27,6 +27,10 @@ export const ffi = Deno.dlopen(libPath, {
     parameters: ['buffer', 'i32', 'buffer'],
     result: 'void',
   },
+  poll_events: {
+    parameters: ['buffer', 'i32'],
+    result: 'i32',
+  },
 } as const);
 
 export interface FrameCallbackHandle {

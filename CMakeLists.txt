@@ -71,6 +71,7 @@ add_library(${LIBRARY_NAME} SHARED
     native/window_state.cpp
     native/nvg_gl_impl.cpp
     native/window.cpp
+    native/events/event_queue.cpp
     native/nvg/font.cpp
     native/nvg/image.cpp
     native/nvg/rect.cpp

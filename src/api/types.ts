@@ -97,3 +97,89 @@ export interface DOMPointInit {
   z?: number;
   w?: number;
 }
+
+// ─── Input Event Types ────────────────────────────────────────────────────────
+
+export type CanvasEventType =
+  | 'keydown'
+  | 'keyup'
+  | 'mousemove'
+  | 'mousedown'
+  | 'mouseup'
+  | 'wheel';
+
+/**
+ * Keyboard event. Property names match the browser KeyboardEvent API.
+ * `key` is the printable character or a named key string (e.g. "Enter",
+ * "ArrowUp"). `code` is the physical key position (e.g. "KeyA", "ArrowUp").
+ */
+export interface CanvasKeyboardEvent {
+  readonly type: 'keydown' | 'keyup';
+  /** Logical key value — printable char or named key (e.g. "a", "Enter"). */
+  readonly key: string;
+  /** Physical key position (e.g. "KeyA", "ArrowLeft"). */
+  readonly code: string;
+  /** Raw SDL keycode, useful as a stable numeric identifier. */
+  readonly keyCode: number;
+  readonly shiftKey: boolean;
+  readonly ctrlKey: boolean;
+  readonly altKey: boolean;
+  readonly metaKey: boolean;
+  /** True when the key event is auto-repeated from holding the key down. */
+  readonly repeat: boolean;
+  readonly capsLock: boolean;
+  readonly numLock: boolean;
+}
+
+/**
+ * Mouse button / motion event. Property names match the browser MouseEvent API.
+ */
+export interface CanvasMouseEvent {
+  readonly type: 'mousemove' | 'mousedown' | 'mouseup';
+  /** Cursor X relative to the window. */
+  readonly clientX: number;
+  /** Cursor Y relative to the window. */
+  readonly clientY: number;
+  /** Relative X movement since last mousemove (non-zero only on mousemove). */
+  readonly movementX: number;
+  /** Relative Y movement since last mousemove (non-zero only on mousemove). */
+  readonly movementY: number;
+  /** 0 = left, 1 = middle, 2 = right — matches browser button numbering. */
+  readonly button: number;
+  /** Click count: 1 = single click, 2 = double click. 0 for mousemove. */
+  readonly detail: number;
+}
+
+/**
+ * Wheel (scroll) event. deltaMode is always 0 (DOM_DELTA_PIXEL).
+ */
+export interface CanvasWheelEvent {
+  readonly type: 'wheel';
+  readonly deltaX: number;
+  readonly deltaY: number;
+  /** Always 0 (reserved for future use). */
+  readonly deltaZ: number;
+  /** Always 0 — DOM_DELTA_PIXEL. */
+  readonly deltaMode: 0;
+  readonly clientX: number;
+  readonly clientY: number;
+}
+
+export type CanvasEvent =
+  | CanvasKeyboardEvent
+  | CanvasMouseEvent
+  | CanvasWheelEvent;
+
+export type CanvasEventListener<E extends CanvasEvent = CanvasEvent> = (
+  event: E,
+) => void;
+
+/** Maps each event type string to its corresponding event object type. */
+export interface CanvasEventMap {
+  keydown: CanvasKeyboardEvent;
+  keyup: CanvasKeyboardEvent;
+  mousemove: CanvasMouseEvent;
+  mousedown: CanvasMouseEvent;
+  mouseup: CanvasMouseEvent;
+  wheel: CanvasWheelEvent;
+}

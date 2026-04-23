@@ -1,6 +1,7 @@
 #include "window.h"
 
 #include <atomic>
+#include <cstring>
 #include <future>
 #include <thread>
 
@@ -9,6 +10,7 @@
 // Local headers
 #include "dispatcher/dispatcher.h"
 #include "dispatcher/dispatcher_sync.h"
+#include "events/event_queue.h"
 #include "window_state.h"
 
 CN_EXPORT void* create_window(int width, int height, const char* title) {
@@ -75,6 +77,27 @@ void composite_canvas_frame() {
   nvgEndFrame(window_state.main_nvg);
 }
 
+static uint8_t sdl_mod_to_cn(SDL_Keymod mod) {
+  uint8_t r = 0;
+  if (mod & SDL_KMOD_SHIFT) r |= MOD_SHIFT;
+  if (mod & SDL_KMOD_CTRL)  r |= MOD_CTRL;
+  if (mod & SDL_KMOD_ALT)   r |= MOD_ALT;
+  if (mod & SDL_KMOD_GUI)   r |= MOD_META;
+  if (mod & SDL_KMOD_CAPS)  r |= MOD_CAPS;
+  if (mod & SDL_KMOD_NUM)   r |= MOD_NUM;
+  return r;
+}
+
+CN_EXPORT int32_t poll_events(uint8_t* out_buf, int32_t max_events) {
+  auto events = drain_events();
+  int32_t count = (int32_t)(events.size() / CN_EVENT_SIZE);
+  if (count > max_events) count = max_events;
+  if (count > 0) {
+    memcpy(out_buf, events.data(), (size_t)count * CN_EVENT_SIZE);
+  }
+  return count;
+}
+
 CN_EXPORT void start_main_loop(void (*frame_callback)()) {
   SDL_Window* window = window_state.window;
 
@@ -83,8 +106,67 @@ CN_EXPORT void start_main_loop(void (*frame_callback)()) {
 
   while (!quit) {
     while (SDL_PollEvent(&ev)) {
-      if (ev.type == SDL_EVENT_QUIT) {
-        quit = true;
+      switch (ev.type) {
+        case SDL_EVENT_QUIT:
+          quit = true;
+          break;
+
+        case SDL_EVENT_KEY_DOWN:
+        case SDL_EVENT_KEY_UP: {
+          uint8_t buf[CN_EVENT_SIZE] = {};
+          buf[0] = ev.type == SDL_EVENT_KEY_DOWN
+                       ? (uint8_t)CNEventType::KEY_DOWN
+                       : (uint8_t)CNEventType::KEY_UP;
+          buf[1] = sdl_mod_to_cn(ev.key.mod);
+          if (ev.key.repeat) buf[1] |= MOD_REPEAT;
+          uint32_t keycode  = (uint32_t)ev.key.key;
+          uint32_t scancode = (uint32_t)ev.key.scancode;
+          memcpy(buf + 4, &keycode,  4);
+          memcpy(buf + 8, &scancode, 4);
+          push_event(buf);
+          break;
+        }
+
+        case SDL_EVENT_MOUSE_MOTION: {
+          uint8_t buf[CN_EVENT_SIZE] = {};
+          buf[0] = (uint8_t)CNEventType::MOUSE_MOVE;
+          memcpy(buf + 4,  &ev.motion.x,    4);
+          memcpy(buf + 8,  &ev.motion.y,    4);
+          memcpy(buf + 12, &ev.motion.xrel, 4);
+          memcpy(buf + 16, &ev.motion.yrel, 4);
+          push_event(buf);
+          break;
+        }
+
+        case SDL_EVENT_MOUSE_BUTTON_DOWN:
+        case SDL_EVENT_MOUSE_BUTTON_UP: {
+          uint8_t buf[CN_EVENT_SIZE] = {};
+          buf[0] = ev.type == SDL_EVENT_MOUSE_BUTTON_DOWN
+                       ? (uint8_t)CNEventType::MOUSE_DOWN
+                       : (uint8_t)CNEventType::MOUSE_UP;
+          memcpy(buf + 4, &ev.button.x, 4);
+          memcpy(buf + 8, &ev.button.y, 4);
+          buf[12] = ev.button.button;
+          buf[13] = ev.button.clicks;
+          push_event(buf);
+          break;
+        }
+
+        case SDL_EVENT_MOUSE_WHEEL: {
+          uint8_t buf[CN_EVENT_SIZE] = {};
+          buf[0] = (uint8_t)CNEventType::MOUSE_WHEEL;
+          float dx =  ev.wheel.x;
+          float dy = -ev.wheel.y;  // flip to match browser deltaY convention
+          memcpy(buf + 4,  &dx,               4);
+          memcpy(buf + 8,  &dy,               4);
+          memcpy(buf + 12, &ev.wheel.mouse_x, 4);
+          memcpy(buf + 16, &ev.wheel.mouse_y, 4);
+          push_event(buf);
+          break;
+        }
+
+        default:
+          break;
       }
     }
 

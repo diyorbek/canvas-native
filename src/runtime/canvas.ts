@@ -2,8 +2,14 @@ import { RenderingContext2D } from '../api/renderingContext2d.ts';
 import { MessageType } from '../constants.ts';
 import { initFrameLoop, requestAnimationFrame } from './frameLoop.ts';
 import { createFrameSab } from './mainLoop.ts';
+import {
+  addCanvasEventListener,
+  removeCanvasEventListener,
+} from './eventDispatcher.ts';
 
 export { requestAnimationFrame };
+export { addCanvasEventListener as addEventListener };
+export { removeCanvasEventListener as removeEventListener };
 export type { RenderingContext2D };
 
 let instance: RenderingContext2D | null = null;

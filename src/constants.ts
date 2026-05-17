@@ -2,8 +2,11 @@ import process from 'node:process';
 
 export type RGBAColor = [r: number, g: number, b: number, a: number];
 
-export const DEFAULT_FONT_PATH =
-  process.platform === 'darwin' ? '/System/Library/Fonts/Helvetica.ttc' : '';
+export const DEFAULT_FONT_PATH = process.platform === 'darwin'
+  ? '/System/Library/Fonts/Helvetica.ttc'
+  : process.platform === 'win32'
+  ? 'C:\\Windows\\Fonts\\arial.ttf'
+  : '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf';
 
 export enum MessageType {
   READY,

@@ -55,6 +55,8 @@ CN_EXPORT void* create_window(int width, int height, const char* title) {
 }
 
 void composite_canvas_frame() {
+  std::lock_guard<std::mutex> lock(window_state.canvas_mutex);
+
   nvgluBindFramebuffer(NULL);
   glViewport(0, 0, window_state.width, window_state.height);
   glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
@@ -73,6 +75,10 @@ void composite_canvas_frame() {
   nvgFillPaint(window_state.main_nvg, canvas_frame);
   nvgFill(window_state.main_nvg);
   nvgEndFrame(window_state.main_nvg);
+
+  // Wait for GPU to finish sampling before releasing the mutex. Otherwise
+  // dispatcher could start drawing while our sampling is still in flight.
+  glFinish();
 }
 
 CN_EXPORT void start_main_loop(void (*frame_callback)()) {

@@ -10,7 +10,8 @@
 
 // --- Dispatcher thread ---
 // Owns the NVG context
-// Executes JS command batches and renders into canvas_layer.
+// Executes JS command batches and renders into the back canvas layer, then
+// atomically swaps so main composites the finished frame.
 // Signals ready via promise once local GL+NVG init is complete.
 void dispatcher_main(std::promise<NVGcontext*> ready) {
   SDL_GL_MakeCurrent(window_state.window, window_state.dispatcher_ctx);
@@ -47,6 +48,10 @@ void dispatcher_main(std::promise<NVGcontext*> ready) {
 void flush_batch() {
   auto batch = get_batch();
 
+  // Serialize with main's composite so it can't sample canvas_layer
+  // mid-write. Main thread's composite holds the same mutex.
+  std::lock_guard<std::mutex> lock(window_state.canvas_mutex);
+
   nvgluBindFramebuffer(window_state.canvas_layer);
   glViewport(0, 0, window_state.width, window_state.height);
   glEnable(GL_STENCIL_TEST);
@@ -58,6 +63,7 @@ void flush_batch() {
   execute_batch(window_state.dispatcher_nvg, batch);
   nvgEndFrame(window_state.dispatcher_nvg);
 
-  // Flush so main thread can see the rendered texture
-  glFlush();
+  // Wait for GPU to finish our commands before releasing the mutex, so main
+  // sees a fully-drawn frame when it takes the lock.
+  glFinish();
 }

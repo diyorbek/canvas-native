@@ -1,6 +1,10 @@
 import { ffi } from '../ffi/bindings.ts';
 
 export class DrawCommandBuffer {
+  // Buffers grow on demand — starting sizes are tuned for typical demos.
+  // Heavy scenes (thousands of commands per frame) reallocate to fit, so
+  // overflowing writes can't silently truncate (which caused native segfaults
+  // when submit_batch was told there were more commands than actually fit).
   private static cmdBuffer = new Float32Array(2 ** 16);
   private static strBuffer = new Uint8Array(2 ** 16);
   private static cmdHead = 0;
@@ -20,12 +24,25 @@ export class DrawCommandBuffer {
   }
 
   private static writeNumber(value: number): void {
+    if (this.cmdHead >= this.cmdBuffer.length) {
+      const grown = new Float32Array(this.cmdBuffer.length * 2);
+      grown.set(this.cmdBuffer);
+      this.cmdBuffer = grown;
+    }
     this.cmdBuffer[this.cmdHead++] = value;
   }
 
   private static writeString(str: string): number {
     const offset = this.strHead;
     const bytes = this.encoder.encode(str);
+    const needed = this.strHead + bytes.length + 1; // + null terminator
+    if (needed > this.strBuffer.length) {
+      let size = this.strBuffer.length * 2;
+      while (size < needed) size *= 2;
+      const grown = new Uint8Array(size);
+      grown.set(this.strBuffer);
+      this.strBuffer = grown;
+    }
     this.strBuffer.set(bytes, this.strHead);
     this.strHead += bytes.length;
     this.strBuffer[this.strHead++] = 0; // null terminator

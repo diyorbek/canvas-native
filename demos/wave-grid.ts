@@ -1,12 +1,13 @@
 import { createCanvas, requestAnimationFrame } from '../mod.ts';
 
-const { ctx, width: W, height: H } = await createCanvas(600, 400, 'Wave Grid');
+const { ctx, width: W, height: H } = await createCanvas(1000, 800, 'Wave Grid');
 
-const SPACING = 18;
+const SPACING = 8;
 const COLS = Math.floor(W / SPACING);
 const ROWS = Math.floor(H / SPACING);
 const CX = W / 2;
 const CY = H / 2;
+console.log(COLS, ROWS);
 
 function hsv(h: number, s: number, v: number): [number, number, number] {
   h = (((h % 360) + 360) % 360) / 60;
@@ -26,7 +27,7 @@ function hsv(h: number, s: number, v: number): [number, number, number] {
 }
 
 let lastTime = 0;
-const FRAME_TIME = 1000 / 60;
+const FRAME_TIME = 1000 / 160;
 let frames = 0;
 let fps = 0;
 let fpsAt = 0;

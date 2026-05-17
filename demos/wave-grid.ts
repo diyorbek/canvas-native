@@ -2,7 +2,7 @@ import { createCanvas, requestAnimationFrame } from '../mod.ts';
 
 const { ctx, width: W, height: H } = await createCanvas(1000, 800, 'Wave Grid');
 
-const SPACING = 8;
+const SPACING = 18;
 const COLS = Math.floor(W / SPACING);
 const ROWS = Math.floor(H / SPACING);
 const CX = W / 2;

@@ -38,37 +38,22 @@ CN_EXPORT void* create_window(int width, int height, const char* title) {
 
   // Main thread only needs NVG for compositing, no stencil strokes needed
   window_state.main_nvg = nvgCreateGL3(NVG_ANTIALIAS);
+  // canvas_layer must be created in the main thread so it can composite it
+  window_state.canvas_layer =
+      nvgluCreateFramebuffer(window_state.main_nvg, width, height, 0);
 
-  // Dispatcher will create canvas_layers[0..1] in its own GL context.
-  window_state.display_index.store(0, std::memory_order_relaxed);
-
-  // Spawn dispatcher thread; wait for it to finish GL+NVG+FBO init before
-  // we wrap the FBO textures into main-side NVG image handles.
+  // Spawn dispatcher thread; wait for it to finish GL+NVG init before returning
   std::promise<NVGcontext*> ready;
   auto future = ready.get_future();
   window_state.dispatcher_thread =
       std::thread(dispatcher_main, std::move(ready));
   future.wait();
 
-  // Wrap the dispatcher's FBO textures as NVG images in main_nvg. The GL
-  // texture IDs are shared across contexts; the NVG image *handles* are per
-  // NVG context, so each side needs its own wrapper to sample the same pixels.
-  // Flags must match nvgluCreateFramebuffer's defaults (FLIPY + PREMULTIPLIED).
-  const int img_flags = NVG_IMAGE_FLIPY | NVG_IMAGE_PREMULTIPLIED;
-  window_state.main_images[0] = nvglCreateImageFromHandleGL3(
-      window_state.main_nvg, window_state.canvas_layers[0]->texture, width,
-      height, img_flags);
-  window_state.main_images[1] = nvglCreateImageFromHandleGL3(
-      window_state.main_nvg, window_state.canvas_layers[1]->texture, width,
-      height, img_flags);
-
   return window_state.dispatcher_nvg;
 }
 
 void composite_canvas_frame() {
-  // Acquire pairs with the dispatcher's release store: guarantees we see
-  // any prior writes the dispatcher made before publishing this index.
-  int front = window_state.display_index.load(std::memory_order_acquire);
+  std::lock_guard<std::mutex> lock(window_state.canvas_mutex);
 
   nvgluBindFramebuffer(NULL);
   glViewport(0, 0, window_state.width, window_state.height);
@@ -82,12 +67,16 @@ void composite_canvas_frame() {
 
   auto canvas_frame = nvgImagePattern(
       window_state.main_nvg, 0, 0, window_state.width, window_state.height, 0,
-      window_state.main_images[front], 1.0f);
+      window_state.canvas_layer->image, 1.0f);
   nvgBeginPath(window_state.main_nvg);
   nvgRect(window_state.main_nvg, 0, 0, window_state.width, window_state.height);
   nvgFillPaint(window_state.main_nvg, canvas_frame);
   nvgFill(window_state.main_nvg);
   nvgEndFrame(window_state.main_nvg);
+
+  // Wait for our sampling to finish before releasing the mutex; otherwise
+  // dispatcher could start drawing while our in-flight reads land.
+  glFinish();
 }
 
 CN_EXPORT void start_main_loop(void (*frame_callback)()) {
@@ -115,10 +104,7 @@ CN_EXPORT void start_main_loop(void (*frame_callback)()) {
   window_state.dispatcher_thread.join();
 
   // Cleanup
-  nvgDeleteImage(window_state.main_nvg, window_state.main_images[0]);
-  nvgDeleteImage(window_state.main_nvg, window_state.main_images[1]);
-  // FBOs were created in dispatcher's context; freeing them here would
-  // require making that context current. Process exit reclaims them anyway.
+  nvgluDeleteFramebuffer(window_state.canvas_layer);
   nvgDeleteGL3(window_state.dispatcher_nvg);
   nvgDeleteGL3(window_state.main_nvg);
   SDL_GL_DestroyContext(window_state.dispatcher_ctx);

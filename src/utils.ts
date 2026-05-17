@@ -3,7 +3,10 @@ import { statSync } from 'node:fs';
 import { NAMED_COLORS_MAP, type RGBAColor } from './constants.ts';
 
 export function stringToBuffer(text: string): BufferSource {
-  return new TextEncoder().encode(text).buffer as BufferSource;
+  const encoded = new TextEncoder().encode(text);
+  const buffer = new Uint8Array(encoded.length + 1);
+  buffer.set(encoded);
+  return buffer.buffer as BufferSource;
 }
 
 export function parseColorString(str: string): RGBAColor {
